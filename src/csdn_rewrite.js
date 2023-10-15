@@ -749,48 +749,48 @@
                 document.getElementsByTagName('head')[0].appendChild(el)
                 return this
             },
-            injectScriptElement(id, scriptCode) {
-                const existsScript = document.getElementById(id)
-                if (existsScript) existsScript.remove()
-                const head = document.querySelector('head')
-                const script = document.createElement('script')
-                // script.innerText = scriptCode
-                script.id = id
-                const code = document.createTextNode(scriptCode)
-                script.appendChild(code)
-                head.appendChild(script)
-            },
-            // 复制功能
-            cleanCopy() {
-                try {
-                    window.$CSDNCleaner.injectScriptElement('clean-copy-script', `
-                        /** 解禁复制功能 - ${window.$CSDNCleaner.NAME} */
-                        try { if (window.hljs) window.hljs.signin = window.hljs.copyCode } catch(err) {};
-                        try { if (window.mdcp) window.mdcp.signin = window.mdcp.copyCode } catch(err) {};
-                        /** 将 copyright 改为不可写, 防止添加复制事件 */
-                        if (window.csdn) {
-                            try {
-                                Object.defineProperty(window.csdn.copyright, 'init', {
-                                    value: function() {
-                                        $("#content_views").unbind("copy");
-                                    },
-                                    writable: false,
-                                })
-                                Object.defineProperty(window.csdn.copyright, 'textData', {
-                                    value: '',
-                                    writable: false,
-                                })
-                            } catch (err) {}
-                            $("#content_views").bind('click', function() {
-                                $("#content_views").unbind("copy");
-                            });
-                        }
-                    `)
-                } catch(err) {
-                    console.log('cleanCopy() failed: ', err)
-                }
-                return this
-            },
+            // injectScriptElement(id, scriptCode) {
+            //     const existsScript = document.getElementById(id)
+            //     if (existsScript) existsScript.remove()
+            //     const head = document.querySelector('head')
+            //     const script = document.createElement('script')
+            //     // script.innerText = scriptCode
+            //     script.id = id
+            //     const code = document.createTextNode(scriptCode)
+            //     script.appendChild(code)
+            //     head.appendChild(script)
+            // },
+            // // 复制功能
+            // cleanCopy() {
+            //     try {
+            //         window.$CSDNCleaner.injectScriptElement('clean-copy-script', `
+            //             /** 解禁复制功能 - ${window.$CSDNCleaner.NAME} */
+            //             try { if (window.hljs) window.hljs.signin = window.hljs.copyCode } catch(err) {};
+            //             try { if (window.mdcp) window.mdcp.signin = window.mdcp.copyCode } catch(err) {};
+            //             /** 将 copyright 改为不可写, 防止添加复制事件 */
+            //             if (window.csdn) {
+            //                 try {
+            //                     Object.defineProperty(window.csdn.copyright, 'init', {
+            //                         value: function() {
+            //                             $("#content_views").unbind("copy");
+            //                         },
+            //                         writable: false,
+            //                     })
+            //                     Object.defineProperty(window.csdn.copyright, 'textData', {
+            //                         value: '',
+            //                         writable: false,
+            //                     })
+            //                 } catch (err) {}
+            //                 $("#content_views").bind('click', function() {
+            //                     $("#content_views").unbind("copy");
+            //                 });
+            //             }
+            //         `)
+            //     } catch(err) {
+            //         console.log('cleanCopy() failed: ', err)
+            //     }
+            //     return this
+            // },
             onLoad() {
                 /** 初始化目录 attribute */
                 window.$CSDNCleaner.BackgroundImageRange.syncShowCatalogue()

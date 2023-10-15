@@ -28,4 +28,21 @@ export class Toolkit {
   static getRandomInterger(size: number) {
     return Math.ceil(Math.random() * size) - 1
   }
+
+  /**
+   * 向页面中插入 `script` 标签
+   * @param id script id
+   * @param scriptCode 代码
+   */
+  static injectScriptElement(id: string, scriptCode: string) {
+    const existsScript = document.getElementById(id)
+    if (existsScript) existsScript.remove()
+    const head = document.querySelector('head')
+    if (!head) throw new Error('Missing Head element.')
+    const script = document.createElement('script')
+    script.id = id
+    const code = document.createTextNode(scriptCode)
+    script.appendChild(code)
+    head.appendChild(script)
+  }
 }

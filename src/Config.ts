@@ -2,6 +2,8 @@ import { reactive } from "vue"
 import { AppStorage } from "./AppStorage"
 
 export class Config {
+  /** 脚本名称 */
+  static readonly NAME = 'CSDN 去广告沉浸阅读模式'
   /** 本地存储的 key */
   static readonly LOCAL_STORAGE_PREFIX = '$CSDNCleaner_'
   /** 已选背景图片类目的 class name */
