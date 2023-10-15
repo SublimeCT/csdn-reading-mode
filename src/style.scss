@@ -1,0 +1,438 @@
+@mixin catalogSheets {
+  opacity: 0.75;
+  z-index: 233;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: 0.2s opacity ease-in-out;
+}
+
+@mixin catalogHoverSheets {
+  opacity: 0.825;
+}
+
+@mixin catalogTitleSheets {
+  margin-bottom: 0;
+  background-image: none;
+  background-color: #fff;
+  border-bottom: 1px solid #eaeaea;
+  color: #222;
+}
+
+@mixin rightCatalogueSheets {
+  body[show-catalogue] aside.recommend-right_aside > #recommend-right > div:not(#groupfile) {
+    display: none !important;
+  }
+  body[show-catalogue] aside.recommend-right_aside > #recommend-right > #groupfile {
+    @include catalogSheets;
+    margin-top: 20px;
+    & > .groupfile-div {
+      max-height: 90vh;
+    }
+    &:hover {
+      @include catalogHoverSheets;
+    }
+    & > .groupfile-div > h3 {
+      @include catalogTitleSheets;
+    }
+    & ol > li {
+    }
+  }
+}
+
+@mixin leftCatalogueSheets {
+  /* 除目录外的其他 card */
+  body[show-catalogue] #mainBox aside.blog_container_aside > div:not(#asidedirectory) {
+    display: none !important;
+    height: 0;
+    z-index: -32;
+    opacity: 0;
+    margin: 0;
+    visibility: hidden;
+  }
+  body[show-catalogue] #mainBox aside.blog_container_aside > div#asidedirectory {
+    @include catalogSheets;
+    & > .groupfile-div {
+      max-height: 90vh;
+    }
+    &:hover {
+      @include catalogHoverSheets;
+    }
+    & > #directory > h3 {
+      @include catalogTitleSheets;
+    }
+    & > #directory ol > li {
+    }
+  }
+}
+
+/* 修复文章内容部分显示多余的 margin-right 的问题 */
+@media screen and (min-width: 1550px) {
+  body:not([show-catalogue]) #mainBox {
+    margin-right: 0;
+  }
+}
+
+/* 修复与 dark reader 一起使用时背景图片被遮挡的问题 */
+html[data-darkreader-scheme] body { height: auto; }
+body:not(.clean-mode) {
+  background-color: var(--background-color) !important;
+  background-image: var(--background-image) !important;
+  background-attachment: fixed !important;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+body>#page>#content, body>.container.container-box,main,body>.main.clearfix { opacity: 0.9; }
+main {margin: 20px;}
+#local { position: fixed; left: -99999px }
+.recommend-item-box .content,.post_feed_box,.topic_r,#bbs_title_bar,#bbs_detail_wrap,#left-box {width: 100% !important;}
+
+/* 需要隐藏的元素 */
+#toolbarBox, .csdn-side-toolbar > div, .btn-side-chatdoc-contentbox, #remuneration, .recommend-ask-box, .write-guide-buttom-box, .tool-active-list, .sidetool-writeguide-box, .passport-auto-tip-login-container, .passport-login-tip-container, .hide-preCode-box,.passport-login-container,.csdn-common-logo-advert,#recommendNps,.reward-box-new,.csdn-redpack-lottery-btn-box,#csdn-shop-window-top,#csdn-shop-window,.csdn-redpack-time, #csdn-redpack, .recommend-item-box.type_other, .triplet-prompt, .column-advert-box, .comment-sofa-flag, #article_content .more-toolbox, .blog-content-box a[data-report-query],main .template-box, .blog-content-box>.postTime,.post_body div[data-pid],#unlogin-tip-box,.t0.clearfix,.recommend-item-box.recommend-recommend-box,.csdn-side-toolbar>a[data-type]:not([data-type=gotop]):not([data-type="$setting"]),a[href^="https://edu.csdn.net/topic"],.adsbygoogle,.mediav_ad,.bbs_feed_ad_box,.bbs_title_h,.title_bar_fixed,#adContent,.crumbs,#page>#content>#nav,#local,#reportContent,.comment-list-container>.opt-box.text-center,.type_hot_word,.blog-expert-recommend-box,.login-mark,#passportbox,.recommend-download-box,.recommend-ad-box,#dmp_ad_58,.blog_star_enter,#header,.blog-sidebar,#new_post.login,.mod_fun_wrap,.hide_topic_box,.bbs_bread_wrap,.news-nav,#rightList.right-box,aside,aside .aside-box.kind_person,#kp_box_476,.tool-box,.pulllog-box,.adblock,.fourth_column,.hide-article-box,#csdn-toolbar
+  {display: none !important;}
+
+main div.blog-content-box pre.set-code-hide,.hide-main-content,#blog_content,#bbs_detail_wrap,.article_content {height: auto !important;}
+.comment-list-box,#bbs_detail_wrap {max-height: none !important;}
+#main {width: 100% !important;}
+#page {width: 80vw !important;}
+#bbs_title_bar {margin-top: 20px;}
+#page>#content {margin-top: 0 !important;}
+#content_views, #content_views * { user-select: auto !important; }
+
+body > .container-box .container_main.clearfix { width: 100% !important; }
+.csdn_main_container > .container_main > #left-box { width: 100% !important; }
+#bbs_detail_wrap > .paginate_box { width: 100% !important; }
+.mod_topic_wrap { width: 100% !important; }
+.container_main > .mod_topic_wrap > .post_feed_box { width: 100% !important; }
+.bbs-common-footer { width: 100% !important; }
+.csdn_main_container > #navs { display: none; }
+
+/* 文中代码块解除选择禁用 | 2021-09-06 16:32:55 */
+pre, pre code, #article_content pre.prettyprint, #article_content pre.prettyprint code {
+  user-select: auto !important;
+}
+
+/* 文章正文底部作者信息 footer fixed 定位改回 relative; 屏蔽打赏 box */
+.more-toolbox-new > .left-toolbox {
+  position: relative !important;
+  left: 0 !important;
+}
+/* 推荐文章 hover 不改变标题颜色 */
+.recommend-box .recommend-item-box .title-box .tit:hover {
+    color: inherit !important;
+}
+/* 图片预览底色 */
+.imgViewDom.disnone { background-color: rgba(0, 0, 0, 0.5); }
+/* 控制目录是否显示 */
+// body[show-catalogue] .recommend-right .flex-column.aside-box {}
+
+
+/* 在宽屏下显示在文章右侧 */
+@media screen and (min-width: 1550px) {
+  body[show-catalogue] .nodata.recommend-right, aside.recommend-right_aside {
+    display: var(--display-catalogue) !important;
+  }
+  @include rightCatalogueSheets;
+  body[show-catalogue] #mainBox aside.blog_container_aside {
+    display: none !important;
+  }
+}
+/* 在小屏下显示在文章左侧 */
+@media screen and (min-width: 1380px) and (max-width: 1550px) {
+  body[show-catalogue] #mainBox aside.blog_container_aside { display: var(--display-catalogue) !important; }
+}
+/* 在小屏下显示在文章左侧 */
+@media screen and (max-width: 1380px) {
+  body[show-catalogue] #mainBox aside.blog_container_aside {
+    display: var(--display-catalogue) !important;
+  }
+  body[show-catalogue] .main_father > .container#mainBox > main {
+    float: right !important;
+  }
+}
+@media screen and (max-width: 1549px) and (min-width: 1380px) {
+  body[show-catalogue] .main_father > .container#mainBox > main {
+    float: right !important;
+  }
+}
+@media screen and (min-width: 0px) and (max-width: 1550px) {
+  /* aside */
+  body[show-catalogue] #mainBox aside.blog_container_aside {
+    position: fixed !important;
+    top: 28px !important;
+  }
+  @include leftCatalogueSheets;
+}
+body:not([show-catalogue]) .main_father > #mainBox > aside { display: none !important; }
+body:not([show-catalogue]) .recommend-right { display: none !important; }
+
+/* 复制按钮增加 !important, 修复在某些页面下样式被覆盖的问题 | 2021-01-23 13:12:57 */
+/* 重写登录后复制按钮样式 | 2021-01-01 10:45:03 */
+.hljs-button.signin[data-title="登录后复制"] { font-size: 0 !important; }
+.hljs-button.signin[data-title="登录后复制"]:before { content: "一键复制"; font-size: 14px; vertical-align: middle; }
+/* 增加隐藏底部推荐文章和版权信息功能 | 2020-11-11 21:03:10 */
+.recommend-box { display: var(--display-recommend-box) !important; }
+.blog-footer-bottom { display: var(--display-copyright) !important; }
+/* 增加 round-slider 组件 | 2020-08-20 20:29:05 */
+.round-slider-wrapper { margin: 15px auto !important; }
+.round-slider-wrapper .rs-handle { background-color: transparent; border: 8px solid transparent; border-right-color: black; margin: -6px 0px 0px 14px !important; border-width: 6px 104px 6px 4px; }
+.round-slider-wrapper .rs-handle:before { display: block; content: " "; position: absolute; height: 22px; width: 22px; background: black; right: -11px; bottom: -11px; border-radius: 100px; }
+.round-slider-wrapper .rs-tooltip { top: 75% !important; font-size: 11px; }
+.round-slider-wrapper .rs-full.rs-tooltip { top: 75% !important; }
+.round-slider-wrapper .rs-tooltip > div { text-align: center; background: orange; color: white; border-radius: 4px; padding: 1px 5px 2px; margin-top: 4px; }
+.round-slider-wrapper .rs-range-color { background-color: #DB5959; }
+.round-slider-wrapper .rs-path-color { background-color: #F0C5C5; }
+.color-picker-container { margin-left: 50%; transform: translateX(-50%); }
+/* 评论区每行增加 hover 效果 | 2020-05-17 18:32:22 */
+.comment-box { background-color: rgba(255,255,255,0.9) !important; }
+.comment-list-box { padding: 0 !important; }
+.comment-list-box > .comment-list { padding: 0 24px; margin-top: 0 !important; padding-top: 16px; }
+.comment-list-box .comment-list { transition: all .2s ease-in-out; }
+.comment-list-box > .comment-list:hover { background-color: rgba(255,255,255,0.7); }
+.comment-list-box .comment-line-box:hover img.avatar { border-color: rgb(255, 198, 198, 0.95); }
+/* 屏蔽固定在页面底部的 toolbox | 2020-05-17 18:28:03 */
+.more-toolbox > .left-toolbox { position: relative !important; left: 0 !important; }
+/* 底部作者信息右侧按钮只显示关注 | 2020-05-17 18:26:52 */
+.right-message > a:not(.personal-watch) { display: none; }
+/* 评论区输入框交叉轴对齐 | 2020-05-17 18:25:54 */
+.comment-edit-box { display: flex; align-items: center; }
+/* 原文链接样式 | 2020-05-17 17:41:11 */
+.source-link-wrapper {
+  display: var(--source-link-wrapper-display);
+  align-items: center;
+  vertical-align: top;
+  & > .source-link-icon { margin-right: 5px; }
+  & > .source-link-label { }
+  & > .source-link-link {
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+    width: 20vw;
+    max-width: 30vw;
+    min-width: 15vw;
+    &:hover { color: #008eff !important; }
+  }
+}
+/* 防止网页主体内容被黑白处理, 适用于特殊日期; CSDN 真是太蠢了，只有 CSDN 把文章内容中的图片都显示成黑白的了, 严重影响阅读! | 2020-04-04 13:17:48 */
+/* 经测试, firefox 下会导致子元素的 fixed 定位失效, 故将其改为 none */
+html { filter: none !important; }
+/* 评论区评论内容强制换行以保持一致性 | 2020-02-19 08:58:33 */
+.comment-box .comment-list-container .comment-list .new-comment { display: block !important; }
+/* 覆盖所有 media query 样式以防止原有的自适应样式导致布局错乱 | 2020-02-19 08:28:52 */
+@media screen and (max-width: 1320px) {
+  .main_father > .container#mainBox > main, body:not([show-catalogue]) > .container-box.csdn_main_container {  float: none; margin: 0 auto !important; margin-top: 20px !important; }
+  body:not([show-catalogue]) > .container-box.csdn_main_container { width: var(--article-weight) !important; }
+  body > .container-box.csdn_main_container { width: calc(var(--article-weight) - 30%) !important; }
+}
+@media screen and (max-width: 1379px) and (min-width: 1320px) {
+  .main_father > .container#mainBox > main, body:not([show-catalogue]) > .container-box.csdn_main_container {  float: none; margin: 0 auto !important; margin-top: 20px !important; }
+  body:not([show-catalogue]) > .container-box.csdn_main_container { width: var(--article-weight) !important; }
+  body > .container-box.csdn_main_container { width: calc(var(--article-weight) - 30%) !important; }
+}
+@media screen and (max-width: 1699px) and (min-width: 1550px) {
+  .main_father > .container#mainBox > main, body:not([show-catalogue]) > .container-box.csdn_main_container { width: var(--article-weight) !important; float: none; margin: 0 auto !important; margin-top: 20px !important; }
+  /* body:not([show-catalogue]) > .container-box.csdn_main_container { width: var(--article-weight) !important; } */
+  body > .container-box.csdn_main_container { width: calc(var(--article-weight) - 30%) !important; }
+}
+@media screen and (max-width: 1549px) and (min-width: 1380px) {
+  .main_father > .container#mainBox > main, body:not([show-catalogue]) > .container-box.csdn_main_container {  float: none; margin: 0 auto !important; margin-top: 20px !important; }
+  body:not([show-catalogue]) > .container-box.csdn_main_container { width: var(--article-weight) !important; }
+  body > .container-box.csdn_main_container { width: calc(var(--article-weight) - 30%) !important; }
+}
+@media screen and (min-width: 1700px) {
+  .main_father > .container#mainBox > main, body:not([show-catalogue]) > .container-box.csdn_main_container { width: var(--article-weight) !important; float: none; margin: 0 auto !important; margin-top: 20px !important; }
+  /* body:not([show-catalogue]) > .container-box.csdn_main_container { width: var(--article-weight) !important; } */
+  body > .container-box.csdn_main_container { width: calc(var(--article-weight) - 30%) !important; }
+}
+/* 评论区样式重写 | 2019-12-27 21:32:24 */
+.comment-list-container img.avatar {
+  width: var(--comments-avatar-size) !important;
+  height: var(--comments-avatar-size) !important;
+  margin-top: 4px;
+  margin-right: 15px !important;
+  border: 3px solid rgba(215, 215, 205, 0.7);
+  transition: border-color .2s ease-in-out;
+}
+.comment-edit-box img.show_loginbox {
+  width: var(--comments-avatar-size) !important;
+  height: var(--comments-avatar-size) !important;
+}
+/* 防止原有的自适应样式导致布局错乱 | 2019-12-27 21:08:09 */
+@media screen and (min-width: 1700px) {
+  .recommend-right.align-items-stretch { color: teal; display: var(--display-catalogue) !important; }
+}
+/* 隐藏底部 more-toolbox 按钮组 ~~和底部作者 row 中的其他信息~~; 还是保留这一行吧 ... 以后可能会把更多对文章和作者的操作放到这里面 | 2019-12-17 22:18:16 */
+/* 修改底部 私信求帮助 按钮样式 | 2019-11-23 17:37:52 */
+.reward-user-box .reward-word { display: none !important; }
+.reward-user-box .reward-fexd {
+  width: 100px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #B4B4B4 !important;
+  font-size: 14px !important;
+  line-height: 21px !important;
+  height: 30px !important
+}
+.reward-user-box .reward-fexd > div { color: transparent; }
+.reward-user-box:hover .reward-fexd > div { color: #B4B4B4; }
+/* iteye 样式重构 | 2019-11-02 11:19:43 */
+body>#page>#content, body>#page>#content>#main .blog_comment { width: auto; }
+body>#page>#content>#main .blog_bottom { height: 30px; }
+body>#page>#content>#main .blog_comment .comment_content { background-color: rgba(255, 214, 173, 0.2); }
+body>#page>#content, body>#page>#content>#main { border: none; }
+body>#page>#content>#main #bottoms, body>#page>#content>#main .blog_nav { display: none; }
+body>#page>#content>#main .blog_title h3 { font-size: 24px; word-wrap: break-word; margin-bottom: 25px; }
+body>#page>#content>#main, #bbs_title_bar > .owner_top,.blog-content-box { border-top-left-radius: 8px !important; border-top-right-radius: 8px !important; }
+body > div#page {background-color: transparent}
+.dl_no_more:after { content: "上边是原话, 脚本作者原本想屏蔽这段话, 但是 CSDN 从未找到自己的底线;\\A 从阅读更多必须注册, 到验证手机号必须关注公众号, 再到大尺度H广告, 严重影响了用户体验;\\A 自从 CSDN 使用明文密码被脱库之后我就不再使用 CSDN 账号, 为了继续阅读 CSDN 内容我写了这个脚本  "; color: teal; display: block; width: 60%; margin: auto; white-space: pre; }
+.recommend-box>.recommend-item-box { transition: all .2s ease-in-out; }
+.recommend-box>.recommend-item-box:hover { background-color: rgba(255,255,255,0.8); }
+/* 脚本设置弹窗 */
+a.option-box[data-type="$setting"] > svg {
+  -webkit-transform: rotate(360deg);
+  animation: rotation 2.5s linear 1;
+  -moz-animation: rotation 2.5s linear 1;
+  -webkit-animation: rotation 2.5s linear 1;
+  -o-animation: rotation 2.5s linear 1;
+}
+a.option-box[data-type=gotop] + a.option-box[data-type="$setting"] {
+  display: flex;
+}
+a.go-top-hide.option-box[data-type=gotop] + a.defaultHideMenu.option-box[data-type="$setting"] {
+  display: none;
+}
+#setting-dialog {
+  z-index: 244;
+  display: block;
+  position: fixed;
+  top: 20vh;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  transform: translateY(0) translateX(0) scale(1) skew(0);
+  transition: 0.65s all ease-in-out;
+}
+#setting-dialog button {
+  border: 2px solid #DADADA;
+}
+#setting-dialog.display-none {
+  transform: translateY(80vh) translateX(90vw) scale(0) skew(50deg, 10deg) !important;
+  display: flex !important;
+}
+#setting-dialog section {
+  opacity: 1;
+  transition: 0.25s opacity ease-in-out;
+}
+#setting-dialog section header {
+  max-width: 550px;
+  height: 50px;
+  font-size: 20px;
+  background: none;
+  padding: 0 15px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 15px;
+  align-items: center;
+  border-bottom: 1px solid #EEE;
+}
+#setting-dialog section header .icon-close > img {
+  width: 20px;
+  cursor: pointer;
+}
+#setting-dialog section article .row {
+  margin: 0;
+  margin-bottom: 10px;
+}
+#setting-dialog section article .row .color-picker-box {
+  margin-bottom: 10px;
+}
+#setting-dialog section article .row > label {
+  font-weight: bold;
+}
+#setting-dialog section article button {
+  color: #409EFF;
+  background-color: #FAFAFA;
+  padding: 4px;
+  margin: 2.5px;
+  border: 1px solid #EEE;
+  border-radius: 3px;
+}
+#setting-dialog section article button:hover { background-color: #EEE; }
+#setting-dialog section article button#btn-clear-bg { color: #F56C6C; }
+#setting-dialog section article button#btn-clear-bgColor { color: #F56C6C; }
+#setting-dialog section article button#btn-update-bg { color: #E6A23C; }
+/* #setting-dialog section article button#btn-use-current { color: #909399; } */
+/* 链接输入框 */
+#custom-bg-url {
+  width: 100%;
+  margin-right: 10px;
+  height: 25px;
+  border-radius: 3px;
+  border: 2px solid #DDD;
+}
+#setting-dialog section article .row#defaultHideMenu-wrap > .content > label {
+  cursor: pointer;
+  margin-right: 15px;
+}
+#setting-dialog section article .row#defaultHideMenu-wrap > .content > label >input {
+  vertical-align: middle;
+}
+#setting-dialog section article .row > .content {
+  display: flex;
+  width: 500px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#setting-dialog section article .row > .content > div {
+  color: grey;
+  margin-right: 10px;
+  cursor: pointer;
+}
+#setting-dialog section article .row > .content > div:hover {
+  color: #000;
+}
+#setting-dialog section article .row > .content > div.STATE_SELECTED_CATEGORY {
+  color: #F60;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+#setting-dialog section article {
+  max-width: 550px;
+  padding: 20px;
+  height: calc(100% - 50px);
+  overflow: auto;
+}
+#setting-dialog section article::-webkit-scrollbar {/*滚动条整体样式*/
+  width: 6px;     /*高宽分别对应横竖滚动条的尺寸*/
+  height: 6px;
+}
+#setting-dialog section article::-webkit-scrollbar-thumb {/*滚动条里面小方块*/
+  border-radius: 10%;
+  -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.3);
+}
+#setting-dialog section article::-webkit-scrollbar-track {/*滚动条里面轨道*/
+  -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+  border-radius: 0;
+  background: rgba(0,0,0,0.1);
+}
+/* 弹窗内部样式 */
+#setting-dialog section {
+  min-width: 500px;
+  height: 75vh;
+  max-height: 520px;
+  min-height: 370px;
+  /* overflow: auto; */
+  background-color: #FFF;
+  /* border-radius: 5px; */
+  border: 2px solid #EEE;
+}
+/* 自定义补充样式 */
+.display-none {display: none !important;}
+#setting-dialog .tips-line { color: grey; font-size: 12px }
+#setting-dialog .link { color: blue; }
+@-webkit-keyframes rotation{
+  from {-webkit-transform: rotate(0deg);}
+  to {-webkit-transform: rotate(360deg);}
+}
