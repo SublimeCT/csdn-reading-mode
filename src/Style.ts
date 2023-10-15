@@ -43,6 +43,20 @@ export class Style {
   static init() {
     // 1. 生成 css 变量并保存到 body 上
     Style._saveStylesAttrs()
-    
+    // 2. 移除黑色背景色的皮肤样式 css 文件
+    Style._removeSkinCss()
+  }
+  /** 移除黑色背景色的皮肤样式 css 文件 */
+  private static _removeSkinCss() {
+    const linkElements = document.getElementsByTagName('link')
+    if (linkElements && linkElements.length) {
+      for (let linkIndex = linkElements.length; linkIndex--;) {
+        const link = linkElements[linkIndex]
+        if (link.href && link.href.indexOf('/themesSkin/') !== -1) {
+          link.remove()
+        }
+      }
+    }
+    return this
   }
 }
