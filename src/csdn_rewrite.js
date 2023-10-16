@@ -303,21 +303,21 @@
                 }
                 return this
             },
-            /**
-             * 拦截源码中对于 `window.csdn` 的赋值操作
-             * @description 由于 `TamperMonkey` 中获取的 `window` 对象并不是真正的 `window` 对象, 所以不能直接 `Object.defineProperty(window, 'scdn')`
-             * @description 所以用 `<script>` 注入的方式执行绑定拦截器的代码
-             */
-            interceptCSDN() {
-                const script = document.createElement('script')
-                script.innerText = `window.$csdn=window.csdn||{$intercept: true};$handleInterceptCSDN=0;Object.defineProperty(window, 'csdn', { set(val) { typeof window.$handleInterceptCSDN === 'function' ? window.$handleInterceptCSDN(val) : window.$csdn = val; }, get() { return window.$csdn } });`
-                document.querySelector('head').appendChild(script)
-                $handleInterceptCSDN = val => {
-                    $csdn = val // 使用直接赋值的方式, 防止因某些属性无法遍历导致未赋值的情况
-                    $csdn.$intercept = true // 标记为已启用拦截
-                    $csdn.middleJump = null // 移除跳转链接时的事件绑定函数
-                }
-            },
+            // /**
+            //  * 拦截源码中对于 `window.csdn` 的赋值操作
+            //  * @description 由于 `TamperMonkey` 中获取的 `window` 对象并不是真正的 `window` 对象, 所以不能直接 `Object.defineProperty(window, 'scdn')`
+            //  * @description 所以用 `<script>` 注入的方式执行绑定拦截器的代码
+            //  */
+            // interceptCSDN() {
+            //     const script = document.createElement('script')
+            //     script.innerText = `window.$csdn=window.csdn||{$intercept: true};$handleInterceptCSDN=0;Object.defineProperty(window, 'csdn', { set(val) { typeof window.$handleInterceptCSDN === 'function' ? window.$handleInterceptCSDN(val) : window.$csdn = val; }, get() { return window.$csdn } });`
+            //     document.querySelector('head').appendChild(script)
+            //     $handleInterceptCSDN = val => {
+            //         $csdn = val // 使用直接赋值的方式, 防止因某些属性无法遍历导致未赋值的情况
+            //         $csdn.$intercept = true // 标记为已启用拦截
+            //         $csdn.middleJump = null // 移除跳转链接时的事件绑定函数
+            //     }
+            // },
             /** 生成 sheets */
             _getSheets() {
                 // 若设置了背景色, 则使用纯色, 否则使用自定义图片或随机图片背景
@@ -749,17 +749,17 @@
                 document.getElementsByTagName('head')[0].appendChild(el)
                 return this
             },
-            // injectScriptElement(id, scriptCode) {
-            //     const existsScript = document.getElementById(id)
-            //     if (existsScript) existsScript.remove()
-            //     const head = document.querySelector('head')
-            //     const script = document.createElement('script')
-            //     // script.innerText = scriptCode
-            //     script.id = id
-            //     const code = document.createTextNode(scriptCode)
-            //     script.appendChild(code)
-            //     head.appendChild(script)
-            // },
+            injectScriptElement(id, scriptCode) {
+                const existsScript = document.getElementById(id)
+                if (existsScript) existsScript.remove()
+                const head = document.querySelector('head')
+                const script = document.createElement('script')
+                // script.innerText = scriptCode
+                script.id = id
+                const code = document.createTextNode(scriptCode)
+                script.appendChild(code)
+                head.appendChild(script)
+            },
             // // 复制功能
             // cleanCopy() {
             //     try {

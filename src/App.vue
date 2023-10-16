@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import './style.scss'
+import { Config } from './Config'
+import SettingsButton from './components/SettingsButton.vue'
+import SettingsDialog from './components/SettingsDialog.vue'
+
 </script>
 
 <template>
   <div id="csdn-reading-mode-dom">
-    <code>csdn-reading-mode-dom</code>
   </div>
+  <Teleport v-if="Config.visibleSidebar" :to="Config.SIDEBAR_SELECTOR">
+    <SettingsButton></SettingsButton>
+  </Teleport>
+  <Teleport v-if="Config.visibleSidebar" to="body">
+    <SettingsDialog></SettingsDialog>
+  </Teleport>
 </template>
 
 <style scoped>

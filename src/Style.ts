@@ -32,17 +32,17 @@ export class Style {
     },
     set(vars: StyleVars) {
       Object.assign(Style._vars, vars)
-      Style._saveStylesAttrs()
+      Style.saveStylesAttrs()
     },
   })
-  private static _saveStylesAttrs() {
+  static saveStylesAttrs() {
     for (const k in Style.vars.value) {
       if (k.indexOf('--') === 0) document.body.style.setProperty(k, Style.vars.value[k as keyof StyleVars])
     }
   }
   static init() {
     // 1. 生成 css 变量并保存到 body 上
-    Style._saveStylesAttrs()
+    Style.saveStylesAttrs()
     // 2. 移除黑色背景色的皮肤样式 css 文件
     Style._removeSkinCss()
   }

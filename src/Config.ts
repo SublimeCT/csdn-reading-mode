@@ -1,5 +1,6 @@
-import { reactive } from "vue"
+import { reactive, ref } from "vue"
 import { AppStorage } from "./AppStorage"
+import { Toolkit } from "./Toolkit"
 
 export class Config {
   /** 脚本名称 */
@@ -8,22 +9,30 @@ export class Config {
   static readonly LOCAL_STORAGE_PREFIX = '$CSDNCleaner_'
   /** 已选背景图片类目的 class name */
   static readonly STATE_SELECTED_CATEGORY = 'STATE_SELECTED_CATEGORY'
+  /** 页面中的 sidebar 元素 selector */
+  static readonly SIDEBAR_SELECTOR: string = '.csdn-side-toolbar'
   /** 脚本配置 */
   static config = reactive<Config>(new Config())
   /** 初始价脚本配置 */
-  static init() {
-    const range = AppStorage.getValue('settings')
+  static async init() {
+    const settings = AppStorage.getValue('settings')
     const config = Config.config
-    if (range) {
+    if (settings) {
       try {
-        const _range = JSON.parse(range)
-        if (!_range || typeof _range !== 'object') throw new Error('range data error')
-        Object.assign(config, _range)
+        const _settings = JSON.parse(settings)
+        if (!_settings || typeof _settings !== 'object') throw new Error('range data error')
+        Object.assign(config, _settings)
       } catch (err) {
         console.error(err)
       }
     }
+    const sidebar = await Toolkit.waitForElement(Config.SIDEBAR_SELECTOR)
+    if (!sidebar) throw new Error('Missing Sidebar element')
+    Config.visibleSidebar.value = true
   }
+
+  /** 页面中的 sidebar 元素是否可访问 */
+  static visibleSidebar = ref(false)
 
   /** 类目集合 */
   categorys: Array<string> = []

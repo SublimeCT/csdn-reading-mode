@@ -12,6 +12,7 @@
     "vue": "^3.3.4"
   },
   "devDependencies": {
+    "@types/jquery": "^3.5.22",
     "@vitejs/plugin-vue": "^4.2.3",
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
