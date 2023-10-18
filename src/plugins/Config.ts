@@ -1,6 +1,6 @@
 import { reactive, ref } from "vue"
-import { AppStorage } from "./AppStorage"
-import { Toolkit } from "./Toolkit"
+import { AppStorage } from "../utils/AppStorage"
+import { Toolkit } from "../utils/Toolkit"
 
 export class Config {
   /** 脚本名称 */

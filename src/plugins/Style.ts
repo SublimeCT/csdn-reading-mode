@@ -1,6 +1,6 @@
-import { computed, reactive } from "vue";
+import { computed } from "vue";
 import { Config } from "./Config";
-import { BackgroundImage } from "./BackgroundImage";
+import { BackgroundImage } from "../utils/BackgroundImage";
 
 export class StyleVars {
   '--comments-avatar-size': string = '50px'

@@ -1,4 +1,4 @@
-import { Config } from './Config'
+import { Config } from '../plugins/Config'
 import { GM_getValue, GM_setValue } from '$'
 
 export class AppStorage {

@@ -1,5 +1,5 @@
 import { Config } from "./Config"
-import { Toolkit } from "./Toolkit"
+import { Toolkit } from "../utils/Toolkit"
 
 interface RewriteCode {
   target: string,
@@ -22,6 +22,9 @@ export class CSDN {
       ${definePropertyCode.join('\n')}
     } catch (err) {}
     `
+  }
+  static init() {
+    CSDN.allowCopy()
   }
   /** 解禁复制功能 */
   static allowCopy() {

@@ -1,33 +1,38 @@
-import { CSDN } from "./CSDN"
-import { Catalogue } from "./Catalogue"
-import { Config } from "./Config"
-import { Intercept } from "./Intercept"
-import { Style } from "./Style"
-
 export class Application {
   static el: HTMLDivElement = document.createElement('div')
-  static init() {
-    // 1. 加载脚本配置
-    Config.init()
-    // 2. 初始化样式
-    Style.init()
-    // 3. 解禁复制功能
-    CSDN.allowCopy()
-    // 4. 注入代码
-    Intercept.init()
-    // 5. 监听页面加载完毕事件
-    Application.onLoad(() => {
-      document.body.appendChild(Application.el)
-      console.log('DOMContentLoaded')
-      Catalogue.onLoad()
-      Intercept.onLoad()
-    })
+  static plugins: Array<AppPlugin> = []
+  static use(plugin: AppPlugin) {
+    Application.plugins.push(plugin)
+    return this
   }
-  static onLoad(fn: Function) {
+
+  /** 触发 onLoad 钩子 */
+  onLoad() {
     if (document.readyState) {
-      fn()
+      this.emit('onLoad')
     } else {
-      window.addEventListener('DOMContentLoaded', () => fn())
+      window.addEventListener('DOMContentLoaded', () => this.emit('onLoad'))
     }
   }
+
+  /**
+   * 触发钩子函数
+   * @param hook 钩子事件函数名
+   */
+  emit(hook: keyof AppPlugin) {
+    for (const plugin of Application.plugins) {
+      if (typeof plugin[hook] === 'function') {
+        (plugin[hook] as HookFunction)(this)
+      }
+    }
+  }
+}
+
+/** 钩子函数类型 */
+export type HookFunction = (app: Application) => void
+
+/** 所有的 hooks */
+export interface AppPlugin {
+  init?: HookFunction
+  onLoad?: HookFunction
 }

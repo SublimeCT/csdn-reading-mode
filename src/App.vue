@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Config } from './Config'
+import { Config } from './plugins/Config'
 import SettingsButton from './components/SettingsButton.vue'
 import SettingsDialog from './components/SettingsDialog.vue'
 

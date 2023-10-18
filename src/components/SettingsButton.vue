@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { Config } from '../Config'
+import { Config } from '../plugins/Config'
 
 const config = Config.config
 </script>

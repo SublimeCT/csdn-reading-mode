@@ -1,6 +1,6 @@
 import { reactive } from "vue"
-import { Config } from "./Config"
-import { Toolkit } from "./Toolkit"
+import { Config } from "../plugins/Config"
+import { Toolkit } from "../utils/Toolkit"
 
 export class BackgroundImage {
   /** 爬到的所有现在可访问的背景图ID */
