@@ -1,8 +1,10 @@
-export class Intercept {
-  static init() {
-    Intercept.interceptCSDN()
+import { AppPlugin } from "../AppPlugin"
+
+export class Intercept implements AppPlugin {
+  init() {
+    this.interceptCSDN()
   }
-  static onLoad() {
+  onLoad() {
     // 解除跳转拦截
     $ && $("#content_views") && $("#content_views").off('click')
   }
@@ -11,7 +13,7 @@ export class Intercept {
    * @description 由于 `TamperMonkey` 中获取的 `window` 对象并不是真正的 `window` 对象, 所以不能直接 `Object.defineProperty(window, 'scdn')`
    * @description 所以用 `<script>` 注入的方式执行绑定拦截器的代码
    */
-  static interceptCSDN() {
+  interceptCSDN() {
     const script = document.createElement('script')
     script.innerText = `
     window.$csdn=window.csdn||{$intercept: true};

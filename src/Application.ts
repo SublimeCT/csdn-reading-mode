@@ -1,6 +1,10 @@
+import { AppPlugin } from "./AppPlugin"
+import { Config } from "./plugins/Config"
+
 export class Application {
   static el: HTMLDivElement = document.createElement('div')
   static plugins: Array<AppPlugin> = []
+  static application = new Application()
   static use(plugin: AppPlugin) {
     Application.plugins.push(plugin)
     return this
@@ -22,17 +26,18 @@ export class Application {
   emit(hook: keyof AppPlugin) {
     for (const plugin of Application.plugins) {
       if (typeof plugin[hook] === 'function') {
-        (plugin[hook] as HookFunction)(this)
+        (plugin[hook] as Function)()
       }
     }
   }
-}
 
-/** 钩子函数类型 */
-export type HookFunction = (app: Application) => void
-
-/** 所有的 hooks */
-export interface AppPlugin {
-  init?: HookFunction
-  onLoad?: HookFunction
+  /**
+   * 配置项已修改
+   * @param field 配置项字段
+   */
+  emitConfigChanged(field: keyof Config) {
+    for (const plugin of Application.plugins) {
+      plugin.onConfigChange && plugin.onConfigChange(field)
+    }
+  }
 }

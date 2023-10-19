@@ -1,5 +1,6 @@
 import { Config } from "./Config"
 import { Toolkit } from "../utils/Toolkit"
+import { AppPlugin } from "../AppPlugin"
 
 interface RewriteCode {
   target: string,
@@ -7,8 +8,8 @@ interface RewriteCode {
   value: string,
 }
 
-export class CSDN {
-  private static _getRewriteCode(code: RewriteCode | Array<RewriteCode>) {
+export class CSDN implements AppPlugin {
+  private _getRewriteCode(code: RewriteCode | Array<RewriteCode>) {
     const _code = Array.isArray(code) ? code : [code]
     const definePropertyCode = _code.map(c => {
       return `
@@ -23,11 +24,11 @@ export class CSDN {
     } catch (err) {}
     `
   }
-  static init() {
-    CSDN.allowCopy()
+  init() {
+    this.allowCopy()
   }
   /** 解禁复制功能 */
-  static allowCopy() {
+  allowCopy() {
     try {
       Toolkit.injectScriptElement('clean-copy-script', `
         /** 解禁复制功能 - ${Config.NAME} */
@@ -37,7 +38,7 @@ export class CSDN {
         if (window.csdn) {
           try {
             ${
-              CSDN._getRewriteCode([
+              this._getRewriteCode([
                 { target: 'window.csdn.copyright', key: 'init', value: 'function() { $("#content_views").unbind("copy"); }' },
                 { target: 'window.csdn.copyright', key: 'textData', value: '""' },
               ])

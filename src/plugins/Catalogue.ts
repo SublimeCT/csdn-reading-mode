@@ -1,12 +1,13 @@
+import { AppPlugin } from "../AppPlugin"
 import { Config } from "./Config"
 import { Style } from "./Style"
 
-export class Catalogue {
-  static onLoad() {
-    Catalogue.syncShowCatalogue()
+export class Catalogue implements AppPlugin {
+  onLoad() {
+    this.syncShowCatalogue()
   }
 
-  static syncShowCatalogue() {
+  syncShowCatalogue() {
     Style.saveStylesAttrs()
     if (Config.config.showCatalogue && document.getElementById('groupfile')) {
       document.body.setAttribute('show-catalogue', '')

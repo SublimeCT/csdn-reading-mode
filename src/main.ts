@@ -11,13 +11,13 @@ import { Catalogue } from './plugins/Catalogue';
 const main = async () => {
   // 注册 plugins
   Application
-    .use(Config)
-    .use(Style)
-    .use(CSDN)
-    .use(Intercept)
-    .use(Catalogue)
+    .use(new Config())
+    .use(new Style())
+    .use(new CSDN())
+    .use(new Intercept())
+    .use(new Catalogue())
 
-  const application = new Application()
+  const application = Application.application
 
   // 触发 init 钩子
   application.emit('init')
