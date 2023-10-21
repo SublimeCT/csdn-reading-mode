@@ -1,6 +1,7 @@
-import { reactive } from "vue"
-import { Config } from "../plugins/Config"
 import { Toolkit } from "../utils/Toolkit"
+import { config } from "../State"
+import { GM_getValue, GM_setValue } from "$"
+import type { UploadFileInfo } from "naive-ui"
 
 export class BackgroundImage {
   /** 爬到的所有现在可访问的背景图ID */
@@ -13,7 +14,7 @@ export class BackgroundImage {
 
   /** 获取新的背景图片地址 */
   static getImgUrl() {
-    const customUrl = Config.config.customUrl
+    const customUrl = config.customUrl
     let url = null
     let id = null
     if (customUrl) {
@@ -32,11 +33,11 @@ export class BackgroundImage {
   /** 获取用户所选类目下的所有图片 id */
   private static _getAllImgIdsByCategorys(): Array<number> {
     // 未选择时使用所有背景图片
-    if (Config.config.categorys.length === 0) return Object.keys(BackgroundImage.IMG_MAP).map(img => Number(img))
+    if (config.categorys.length === 0) return Object.keys(BackgroundImage.IMG_MAP).map(img => Number(img))
     const idList: Array<number> = []
-    for (const categoryName in Config.config.categorys) {
-      if (Array.isArray(BackgroundImage.IMG_CATEGORYS[Config.config.categorys[categoryName]])) {
-        idList.push(...BackgroundImage.IMG_CATEGORYS[Config.config.categorys[categoryName]])
+    for (const categoryName in config.categorys) {
+      if (Array.isArray(BackgroundImage.IMG_CATEGORYS[config.categorys[categoryName]])) {
+        idList.push(...BackgroundImage.IMG_CATEGORYS[config.categorys[categoryName]])
       }
     }
     return idList
@@ -63,9 +64,9 @@ export class BackgroundImage {
       result.url = BackgroundImage.idOrUrl
       result.name = '自定义图片'
       result.html = `<span>自定义图片</span>`
-    } else if (Config.config.bgColor) {
-      result.name = Config.config.bgColor
-      result.html = `<span>${Config.config.bgColor}</span>`
+    } else if (config.bgColor) {
+      result.name = config.bgColor
+      result.html = `<span>${config.bgColor}</span>`
     } else {
       result.url = BackgroundImage._toBaiduUrl(BackgroundImage.idOrUrl, false)
       for (const categoryName in BackgroundImage.IMG_CATEGORYS) {
@@ -86,4 +87,34 @@ export interface BackgroundImageInfo {
   name: string
   category: string
   html: string
+}
+
+/** 用户自定义图片 */
+export class CustomBackgroundImage {
+  /** 图片名称 */
+  name: string = ''
+  /** 图片地址 */
+  url: string = ''
+  /** 
+   * 将上传的文件转为 base64 数据
+   * @param file File
+   */
+  static toBase64(file: File): Promise<string> {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    return new Promise((resolve, reject) => {
+      reader.onload = function (e) {
+        // e.target.result 即为base64结果
+        if (!e.target || !e.target.result) return reject(e)
+        resolve(e.target.result.toString())
+      };
+    })
+  }
+  static getImages(): Array<UploadFileInfo> {
+    const images = GM_getValue<Array<UploadFileInfo>>('CustomBackgroundImage') || []
+    return images
+  }
+  static saveImages(images: Array<UploadFileInfo>) {
+    GM_setValue('CustomBackgroundImage', images)
+  }
 }

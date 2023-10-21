@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { Config } from './plugins/Config'
+import { SIDEBAR_SELECTOR } from './ScriptConfig'
 import SettingsButton from './components/SettingsButton.vue'
 import SettingsDialog from './components/SettingsDialog.vue'
+import { visibleSidebar } from './State'
 
 </script>
 
 <template>
   <div id="csdn-reading-mode-dom">
   </div>
-  <Teleport v-if="Config.visibleSidebar" :to="Config.SIDEBAR_SELECTOR">
+  <Teleport v-if="visibleSidebar" :to="SIDEBAR_SELECTOR">
     <SettingsButton></SettingsButton>
   </Teleport>
-  <Teleport v-if="Config.visibleSidebar" to="body">
+  <Teleport v-if="visibleSidebar" to="body">
     <SettingsDialog></SettingsDialog>
   </Teleport>
 </template>

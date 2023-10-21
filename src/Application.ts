@@ -1,5 +1,5 @@
 import { AppPlugin } from "./AppPlugin"
-import { Config } from "./plugins/Config"
+import { ScriptConfig } from "./ScriptConfig"
 
 export class Application {
   static el: HTMLDivElement = document.createElement('div')
@@ -35,9 +35,19 @@ export class Application {
    * 配置项已修改
    * @param field 配置项字段
    */
-  emitConfigChanged(field: keyof Config) {
+  emitConfigChanged(field: keyof ScriptConfig) {
     for (const plugin of Application.plugins) {
       plugin.onConfigChange && plugin.onConfigChange(field)
+    }
+  }
+
+  /**
+   * 预览指定背景图
+   * @param url 图片 URL
+   */
+  emitPreviewImage(url: string) {
+    for (const plugin of Application.plugins) {
+      plugin.onPreviewImage && plugin.onPreviewImage(url)
     }
   }
 }

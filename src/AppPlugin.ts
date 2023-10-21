@@ -8,4 +8,9 @@ export interface AppPlugin {
   onLoad?(): void
   /** 配置项已修改 */
   onConfigChange?(field: keyof ScriptConfig): void
+  /**
+   * 预览指定背景图
+   * @param url 图片 URL
+   */
+  onPreviewImage?(url: string): void
 }

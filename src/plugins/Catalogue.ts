@@ -1,5 +1,5 @@
 import { AppPlugin } from "../AppPlugin"
-import { Config } from "./Config"
+import { config } from "../State"
 import { Style } from "./Style"
 
 export class Catalogue implements AppPlugin {
@@ -9,7 +9,7 @@ export class Catalogue implements AppPlugin {
 
   syncShowCatalogue() {
     Style.saveStylesAttrs()
-    if (Config.config.showCatalogue && document.getElementById('groupfile')) {
+    if (config.showCatalogue && document.getElementById('groupfile')) {
       document.body.setAttribute('show-catalogue', '')
       if (window.$csdn && window.$csdn.fixedSidebar) {
         window.$csdn.fixedSidebar({

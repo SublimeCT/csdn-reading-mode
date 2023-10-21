@@ -1,3 +1,9 @@
+/** 脚本名称 */
+export const NAME = 'CSDN 去广告沉浸阅读模式'
+
+/** 页面中的 sidebar 元素 selector */
+export const SIDEBAR_SELECTOR = '.csdn-side-toolbar'
+
 export class ScriptConfig {
   /** 类目集合 */
   categorys: Array<string> = []

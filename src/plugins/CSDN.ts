@@ -1,4 +1,3 @@
-import { Config } from "./Config"
 import { Toolkit } from "../utils/Toolkit"
 import { AppPlugin } from "../AppPlugin"
 
@@ -31,7 +30,7 @@ export class CSDN implements AppPlugin {
   allowCopy() {
     try {
       Toolkit.injectScriptElement('clean-copy-script', `
-        /** 解禁复制功能 - ${Config.NAME} */
+        /** 解禁复制功能 */
         try { if (window.hljs) window.hljs.signin = window.hljs.copyCode } catch(err) {};
         try { if (window.mdcp) window.mdcp.signin = window.mdcp.copyCode } catch(err) {};
         /** 将 copyright 改为不可写, 防止添加复制事件 */

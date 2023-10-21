@@ -1,8 +1,8 @@
 import { reactive } from "vue";
-import { Config } from "./Config";
 import { BackgroundImage } from "../utils/BackgroundImage";
 import { AppPlugin } from "../AppPlugin";
 import { ScriptConfig } from "../ScriptConfig";
+import { config } from "../State";
 
 export class StyleVars {
   '--comments-avatar-size': string = '50px'
@@ -15,13 +15,13 @@ export class StyleVars {
   '--display-catalogue': string = ''
   static getVars(): StyleVars {
     const vars = new StyleVars()
-    vars["--source-link-wrapper-display"] = Config.config.showSourceLink ? 'inline-flex' : 'none'
-    vars["--background-color"] = Config.config.bgColor || '#EAEAEA'
-    vars['--background-image'] = Config.config.bgColor ? 'none' : BackgroundImage.getImgUrl()
-    vars['--article-weight'] = Config.config.articleWeight
-    vars['--display-recommend-box'] = Config.config.hideRecommendBox ? 'none' : 'block'
-    vars['--display-copyright'] = Config.config.hideCopyright ? 'none' : 'block'
-    vars['--display-catalogue'] = Config.config.showCatalogue ? 'block' : 'none'
+    vars["--source-link-wrapper-display"] = config.showSourceLink ? 'inline-flex' : 'none'
+    vars["--background-color"] = config.bgColor || '#EAEAEA'
+    vars['--background-image'] = config.bgColor ? 'none' : BackgroundImage.getImgUrl()
+    vars['--article-weight'] = config.articleWeight
+    vars['--display-recommend-box'] = config.hideRecommendBox ? 'none' : 'block'
+    vars['--display-copyright'] = config.hideCopyright ? 'none' : 'block'
+    vars['--display-catalogue'] = config.showCatalogue ? 'block' : 'none'
     return vars
   }
 }
@@ -38,6 +38,8 @@ export class Style implements AppPlugin {
     Style.saveStylesAttrs()
     // 2. 移除黑色背景色的皮肤样式 css 文件
     this._removeSkinCss()
+    // 3. 先使文章内容透明, 等待脚本初始化完毕后再将其显示
+    console.log('先使文章内容透明, 等待脚本初始化完毕后再将其显示')
   }
   /** 移除黑色背景色的皮肤样式 css 文件 */
   private _removeSkinCss() {
@@ -55,9 +57,17 @@ export class Style implements AppPlugin {
   onConfigChange(field: keyof ScriptConfig) {
     switch(field) {
       case 'bgColor':
-        Style.vars['--background-color'] = Config.config.bgColor
+        Style.vars['--background-color'] = config.bgColor
         break
     }
+    Style.saveStylesAttrs()
+  }
+  /**
+   * 预览指定背景图
+   * @param url 图片 URL
+   */
+  onPreviewImage(url: string) {
+    Style.vars['--background-image'] = `url(${url})`
     Style.saveStylesAttrs()
   }
 }

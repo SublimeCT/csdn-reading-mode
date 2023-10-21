@@ -1,21 +1,31 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
-    <n-modal v-model:show="Config.visibleSettingsDialog.value" :style="bodyStyle" size="small" preset="card"
+    <n-modal v-model:show="visibleSettingsDialog" :style="bodyStyle" size="small" preset="card"
       :bordered="false" title="脚本设置">
       <template #header>
         <header>脚本设置</header>
       </template>
-      <n-form ref="formRef" :model="config" size="small" label-placement="top">
+      <n-form ref="formRef" :model="config" size="medium" label-placement="top">
         <n-form-item label="当前背景图" path="bgColor">
-          <n-button text type="primary" @click="onClickBackground">
+          <n-button text type="info" @click="onClickBackground">
             {{ BackgroundImage.currentUrl.name }}
           </n-button>
         </n-form-item>
-        <!-- <n-form-item label="背景图片类目范围(点选)" path="categorys">
-          <n-tag v-for="bg in BackgroundImage.IMG_CATEGORYS" v-model:checked="" checkable disabled>
-            爱在西元前
-          </n-tag>
-        </n-form-item> -->
+        <n-form-item label="背景图片类目范围(点选)" path="categorys">
+          <n-space size="small">
+            <n-tag
+              v-for="(ids, category) in BackgroundImage.IMG_CATEGORYS"
+              :checked="config.categorys.includes(category)"
+              checkable
+              type="warning"
+              :on-update-checked="(checked: boolean) => onUpdateCheckedCategory(category, checked)">
+              {{ category }}
+            </n-tag>
+          </n-space>
+        </n-form-item>
+        <n-form-item label="自定义背景图片" path="bgColor">
+          <custom-image v-model:url="config.customUrl"></custom-image>
+        </n-form-item>
         <n-form-item label="背景颜色" path="bgColor">
           <n-color-picker v-model:value="config.bgColor" :show-alpha="true" :actions="['clear']"
             :on-complete="() => onChange('bgColor')" />
@@ -26,24 +36,24 @@
 </template>
 
 <script setup lang="ts">
-import { StyleValue, watch } from 'vue';
-import { Config } from '../plugins/Config';
-import { NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider } from 'naive-ui'
+import { StyleValue } from 'vue';
+import { NTag, NImageGroup, NSpace, NImage, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider } from 'naive-ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
-import { Style } from '../plugins/Style';
 import { Application } from '../Application';
 import { BackgroundImage } from '../utils/BackgroundImage';
+import { config, visibleSettingsDialog } from '../State'
+import { ScriptConfig } from '../ScriptConfig';
+import CustomImage from './CustomImage.vue'
 
 const bodyStyle: StyleValue = { width: '600px' }
 
-const config = Config.config
 const application = Application.application
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {
-    primaryColor: '#1677ff',
-    primaryColorHover: '#69b1ff',
-    primaryColorPressed: '#0958d9',
+    primaryColor: '#fd9841',
+    primaryColorHover: '#ffb97c',
+    primaryColorPressed: '#ff871f',
   },
 }
 
@@ -51,11 +61,19 @@ const themeOverrides: GlobalThemeOverrides = {
  * 监听配置项更新并触发钩子函数, 在 `Plugins` 中进行处理
  * @param field 更新的属性名称
  */
-const onChange = (field: keyof Config) => application.emitConfigChanged(field)
+const onChange = (field: keyof ScriptConfig) => application.emitConfigChanged(field)
 
 const onClickBackground = () => {
   if (BackgroundImage.currentUrl.url) {
     window.open(BackgroundImage.currentUrl.url)
+  }
+}
+
+const onUpdateCheckedCategory = (category: string, checked: boolean) => {
+  if (checked && !config.categorys.includes(category)) {
+    config.categorys.push(category)
+  } else {
+    config.categorys = config.categorys.filter(c => c !== category)
   }
 }
 </script>
