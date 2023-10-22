@@ -26,11 +26,11 @@ export default defineConfig({
           '*://blog.csdn.net/*/article/details/*',
           '*://*.blog.csdn.net/article/details/*',
         ],
-        include: [
-          /https:\/\/\[\d\w]+\.iteye\.com\/blog\/\d+$/,
-          /https:\/\/[\d\w]+\.iteye\.com\/news\/\d+$/,
-          /https:\/\/ask\.csdn\.net\/questions\/\d+$/,
-        ]
+        // include: [
+        //   /https:\/\/\[\d\w]+\.iteye\.com\/blog\/\d+$/,
+        //   /https:\/\/[\d\w]+\.iteye\.com\/news\/\d+$/,
+        //   /https:\/\/ask\.csdn\.net\/questions\/\d+$/,
+        // ]
       },
       build: {
         externalGlobals: {

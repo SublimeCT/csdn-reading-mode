@@ -11,7 +11,6 @@
     list-type="image-card">
     点击上传
   </n-upload>
-
 </template>
 
 <script setup lang="ts">
@@ -24,24 +23,17 @@ const props = defineProps<{
   url: string
 }>()
 
-const images: Array<UploadFileInfo> = CustomBackgroundImage.getImages()
-  console.log(images)
+const images = CustomBackgroundImage.getImages()
+console.warn(images)
 
 const customRequest = async (options: CustomRequestOptions) => {
   if (!options.file.file) return console.warn('Missing Image file')
-  try {
-    const base64URL = await CustomBackgroundImage.toBase64(options.file.file)
-    options.file.url = base64URL
-    options.onFinish()
-    console.log(options)
-  } catch(err) {
-    options.onError()
-    throw err
-  }
+  await CustomBackgroundImage.save(options)
 }
 
 const onRemove = (data: { file: SettledFileInfo, fileList: SettledFileInfo[] }) => {
   console.log('onRemove', data)
+  CustomBackgroundImage.remove(data.file)
 }
 
 const onPreview = (file: SettledFileInfo) => {

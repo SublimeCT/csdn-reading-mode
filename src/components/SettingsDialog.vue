@@ -40,7 +40,7 @@ import { StyleValue } from 'vue';
 import { NTag, NImageGroup, NSpace, NImage, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider } from 'naive-ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { Application } from '../Application';
-import { BackgroundImage } from '../utils/BackgroundImage';
+import { BackgroundImage, CustomBackgroundImage } from '../utils/BackgroundImage';
 import { config, visibleSettingsDialog } from '../State'
 import { ScriptConfig } from '../ScriptConfig';
 import CustomImage from './CustomImage.vue'
