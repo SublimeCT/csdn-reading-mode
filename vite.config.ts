@@ -22,6 +22,9 @@ export default defineConfig({
         icon: 'https://g.csdnimg.cn/static/logo/favicon32.ico',
         name: 'CSDN 去广告沉浸阅读模式',
         namespace: 'SublimeCT',
+        require: [
+          'https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js',
+        ],
         match: [
           '*://blog.csdn.net/*/article/details/*',
           '*://*.blog.csdn.net/article/details/*',

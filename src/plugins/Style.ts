@@ -29,6 +29,7 @@ export class StyleVars {
 export class Style implements AppPlugin {
   static vars: StyleVars = reactive(new StyleVars())
   static saveStylesAttrs() {
+    if (!document.body) return console.warn('Missing <body>')
     for (const k in Style.vars) {
       if (k.indexOf('--') === 0) document.body.style.setProperty(k, Style.vars[k as keyof StyleVars])
     }
@@ -38,8 +39,11 @@ export class Style implements AppPlugin {
     Style.saveStylesAttrs()
     // 2. 移除黑色背景色的皮肤样式 css 文件
     this._removeSkinCss()
-    // 3. 先使文章内容透明, 等待脚本初始化完毕后再将其显示
-    console.log('先使文章内容透明, 等待脚本初始化完毕后再将其显示')
+    // // 3. 先使文章内容透明, 等待脚本初始化完毕后再将其显示
+    // console.log('先使文章内容透明, 等待脚本初始化完毕后再将其显示')
+  }
+  onLoad() {
+    Style.saveStylesAttrs()
   }
   /** 移除黑色背景色的皮肤样式 css 文件 */
   private _removeSkinCss() {

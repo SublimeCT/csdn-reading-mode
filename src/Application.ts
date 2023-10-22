@@ -12,10 +12,10 @@ export class Application {
 
   /** 触发 onLoad 钩子 */
   onLoad() {
-    if (document.readyState) {
-      this.emit('onLoad')
-    } else {
+    if (document.readyState === 'loading') {
       window.addEventListener('DOMContentLoaded', () => this.emit('onLoad'))
+    } else {
+      this.emit('onLoad')
     }
   }
 
