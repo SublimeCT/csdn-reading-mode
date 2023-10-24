@@ -5,6 +5,7 @@ import type { UploadFileInfo } from "naive-ui"
 // import ImageWorker from '@/utils/Image.worker?worker'
 import type { CustomRequestOptions, SettledFileInfo } from "naive-ui/es/upload/src/interface"
 import { reactive } from "vue"
+import { DB, DBTable } from "./AppStorage"
 
 export class BackgroundImage {
   /** 爬到的所有现在可访问的背景图ID */
@@ -143,47 +144,24 @@ export class CustomBackgroundImage {
   /**
    * 上传文件
    * 
-   * 为了防止图片数量和尺寸过多导致的页面线程阻塞:
-   * - 每张上传的图片都会生成一张缩略图, 也就是说, **每张图片会保存一张原图和一张缩略图**
-   * - 每张图片(原图和缩略图)都会调用 `GM_setValue` 单独保存, 实测写入耗时远大于读取, 所以将每个图片作为一个保存单元:
+   * 将用户上传的图片保存到 `indexeddb`, 但由于浏览器的同源策略, 无法适用于所有的文章页面, 因为域名可能是不一样的, 例如:
    * 
-   * ```typescript
-   * // 保存原图, id 为 file.id
-   * GM_setValue(`bg:${id}`, Base64URL)
+   * - https://csdnnews.blog.csdn.net/article/details/133896968
+   * - https://blog.csdn.net/weixin_44769612/article/details/130941960
    * 
-   * // 保存缩略图, id 为 file.id
-   * GM_setValue(`bg:thumb:${id}`, thumbBase64URL)
-   * ```
-   * 
-   * 其实最佳方案应该是保存到 `indexeddb`, 但由于浏览器的同源策略, 导致无法适用于所有的文章页面, 因为域名可能是不一样的, 例如:
-   * 
-   * - `https://csdnnews.blog.csdn.net/article/details/133896968`
-   * - `https://blog.csdn.net/weixin_44769612/article/details/130941960`
-   * 
-   * 1. 转换成 `base64` 格式持久化存储, 调用 `GM_setValue` 保存
-   * 2. 转换成 `Blob URL` 格式, 将其作为当前页面中使用的图片 URL, 因为相比 base64, Blob 无需解码, 加载速度更快
+   * 但如果使用 `Tampermonkey` 的 `GM_setValue`, 在存储大量数据后, 会导致页面所有的脚本失效 😭
    * 
    * @param file 上传的文件
    */
   static async save(options: CustomRequestOptions) {
-    const file = options.file
-    console.time(`save-file:${options.file.id}`)
-    console.time(`save-file-thumb:${options.file.id}`)
-    await Promise.all([
-      CustomBackgroundImage.convertImage(file.file as File).then(res => {
-        file.url = res.url
-        GM_setValue(`bg:${file.id}`, res.base64)
-        console.timeEnd(`save-file:${options.file.id}`)
-      }),
-      CustomBackgroundImage.convertImage(file.file as File, 200).then(res => {
-        file.thumbnailUrl = res.url
-        GM_setValue(`bg:thumb:${file.id}`, res.base64)
-        console.timeEnd(`save-file-thumb:${options.file.id}`)
-      })
-    ])
-    options.onFinish()
-    console.log(222222, options)
-    CustomBackgroundImage.images.push(options.file)
+    try {
+      await DB.add(DBTable.BackgroundImages, options.file)
+      CustomBackgroundImage.images.push(options.file)
+      options.onFinish()
+    } catch (err) {
+      options.onError()
+      throw err
+    }
   }
 
   /**
@@ -191,9 +169,10 @@ export class CustomBackgroundImage {
    * @description created by ChatGPT 😊
    * @param image 图片，可以是字符串类型的图片地址或File类型的图片。
    * @param targetHeight 目标高度，可选参数。如果提供了目标高度，则会根据目标高度调整图片大小并保持宽高比。
+   * @param toBase64 是否生成 Base64 数据
    * @returns 包含Blob格式的URL和base64数据的Promise。
    */
-  static convertImage(image: string | File, targetHeight?: number): Promise<{ url: string, base64: string }> {
+  static convertImage(image: string | File, targetHeight: number = 200, toBase64: boolean = true): Promise<{ url: string, base64: string }> {
     let imageUrl: string;
   
     if (typeof image === 'string') {
@@ -225,27 +204,35 @@ export class CustomBackgroundImage {
           canvas.toBlob((blob) => {
             if (blob) {
               const url = URL.createObjectURL(blob);
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                resolve({
-                  url: url,
-                  base64: reader.result as string
-                });
-              };
-              reader.readAsDataURL(blob);
+              if (toBase64) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  resolve({
+                    url: url,
+                    base64: reader.result as string
+                  });
+                };
+                reader.readAsDataURL(blob);
+              } else {
+                resolve({ url, base64: '' })
+              }
             } else {
               reject(new Error('Failed to create Blob.'));
             }
           });
         } else {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            resolve({
-              url: imageUrl,
-              base64: reader.result as string
-            });
-          };
-          reader.readAsDataURL(image instanceof File ? image : new Blob([img.src]));
+          if (toBase64) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              resolve({
+                url: imageUrl,
+                base64: reader.result as string
+              });
+            };
+            reader.readAsDataURL(image instanceof File ? image : new Blob([img.src]));
+          } else {
+            resolve({ url: imageUrl, base64: '' })
+          }
         }
       };
   
@@ -271,84 +258,30 @@ export class CustomBackgroundImage {
 
   static images = reactive<Array<CustomBackgroundImage>>([])
 
-  static getImages() {
+  static async getImages() {
     if (CustomBackgroundImage.images.length) return CustomBackgroundImage.images
+    console.time('获取所有背景图片')
     // 1. 读取以保存的所有背景图片
     // console.time('GM_getValue("CustomBackgroundImage")')
-    const _images = (GM_getValue<Array<CustomBackgroundImage>>('CustomBackgroundImage') || []).map(img => new CustomBackgroundImage(img))
+    const _images = (await DB.getList<CustomBackgroundImage>(DBTable.BackgroundImages)).map(img => new CustomBackgroundImage(img))
     Object.assign(CustomBackgroundImage.images, _images)
     // console.timeEnd('GM_getValue("CustomBackgroundImage")')
-    // 2. 读取以保存图片的缩略图和原图的 base64 URL
+    // 2. 根据原图 File 生成缩略图, 并创建原图和缩略图的 Blob URL
     for (const img of CustomBackgroundImage.images) {
       if (img.url) continue // http* 链接格式的图片
-
       img.status = 'pending'
-      const base64URL = GM_getValue<string>(`bg:${img.id}`)
-      const thumbBase64URL = GM_getValue<string>(`bg:thumb:${img.id}`)
-      if (!base64URL) {
-        console.error('图片获取失败, 可能是缓存被清理导致', img)
-        img.status = 'error'
-        continue
-      }
-      if (!thumbBase64URL) {
-        console.warn('缩略图图片获取失败, 可能是缓存被清理导致', img)       
-        img.status = 'error'
-        continue
-      }
-      CustomBackgroundImage.base64ToBlobUrl(base64URL).then(url => {
-        img.status = 'finished'
-        img.url = url       
-      })
-      CustomBackgroundImage.base64ToBlobUrl(thumbBase64URL).then(url => img.thumbnailUrl = url)
+      img.url = URL.createObjectURL(img.file as File)
+      const { url } = await CustomBackgroundImage.convertImage(img.file as File, void 0, false)
+      img.thumbnailUrl = url
+      img.status = 'finished'
+      console.log(url)
     }
-    CustomBackgroundImage.cleanImagesCache()
+    console.timeEnd('获取所有背景图片')
     return CustomBackgroundImage.images
   }
-  static getSaveImages(images: Array<CustomBackgroundImage>): Array<CustomBackgroundImage> {
-    return images.map(img => {
-      let url = ''
-      if (img.url && img.url.indexOf('http') === 0) url = img.url
-      return {
-        ...img,
-        url,
-        thumbnailUrl: '',
-      }
-    })
-  }
-  static remove(file: SettledFileInfo) {
-    GM_deleteValue(`bg:${file.id}`)
-    GM_deleteValue(`bg:thumb:${file.id}`)
+  static async remove(file: SettledFileInfo) {
+    await DB.delete(DBTable.BackgroundImages, file.id)
     const index = CustomBackgroundImage.images.findIndex(img => img.id === file.id)
-    if (index === -1) throw new Error("Internal Error: Image not found");
     CustomBackgroundImage.images.splice(index, 1)
-  }
-  static cleanImagesCache() {
-    const ids = GM_listValues()
-    for (const id of ids) {
-      const imageID = CustomBackgroundImage.getIdByStorageKey(id)
-      if (!imageID) continue
-      let isExists = false
-      for (const img of CustomBackgroundImage.images) {
-        if (img.id === img.id) {
-          isExists = true
-          break
-        }
-      }
-      if (!isExists) GM_deleteValue(id)
-    }
-    console.log('cleanImagesCache', ids)
-  }
-  private static getIdByStorageKey(key: string) {
-    if (key.indexOf('bg:thumb:') === 0) {
-      return key.slice(9)
-    } else if (key.indexOf('bg:') === 0) {
-      return key.slice(3)
-    }
-  }
-  static saveImages(images: Array<CustomBackgroundImage>) {
-    // console.time('GM_setValue("CustomBackgroundImage")')
-    const saveImages = CustomBackgroundImage.getSaveImages(images)
-    GM_setValue('CustomBackgroundImage', saveImages)
-    // console.timeEnd('GM_setValue("CustomBackgroundImage")')
   }
 }
