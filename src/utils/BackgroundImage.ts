@@ -1,11 +1,10 @@
 import { Toolkit } from "../utils/Toolkit"
 import { config } from "../State"
-import { GM_deleteValue, GM_getValue, GM_listValues, GM_setValue } from "$"
-import type { UploadFileInfo } from "naive-ui"
-// import ImageWorker from '@/utils/Image.worker?worker'
+import ImageWorker from './Image.worker?worker&inline'
 import type { CustomRequestOptions, SettledFileInfo } from "naive-ui/es/upload/src/interface"
-import { reactive } from "vue"
+import { ref } from "vue"
 import { DB, DBTable } from "./AppStorage"
+import { WorkerMessageMethod } from "./WorkerTypes"
 
 export class BackgroundImage {
   /** 爬到的所有现在可访问的背景图ID */
@@ -93,36 +92,113 @@ export interface BackgroundImageInfo {
   html: string
 }
 
-// export class ImageWorkerHandler {
-//   /** 最大线程数 */
-//   static readonly WORKER_MAX_COUNT = Math.max(navigator.hardwareConcurrency, 4)
-//   /** 创建用于处理图像的线程, 为了防止超过浏览器限制, 最大数量为 4 */
-//   static workers: Array<Worker> = []
-//   // static workers = Array.from({ length:  }).map(() => new ImageWorker())
-//   /** 当前使用的线程 key */
-//   static poolTaskCount: Array<number> = []
-//   /** 从线程池中创建或获取线程 */
-//   static getWorker() {
-//     if (ImageWorkerHandler.workers.length >= ImageWorkerHandler.WORKER_MAX_COUNT) { // 使用已有线程
-//       let targetIndex = 0
-//       for (let index = 0; index < ImageWorkerHandler.poolTaskCount.length; index++) {
-//         if (index === 0) continue
-//         if (ImageWorkerHandler.poolTaskCount[index] < ImageWorkerHandler.poolTaskCount[index - 1]) {
-//           targetIndex = index
-//           break
-//         }
-//       }
-//       ImageWorkerHandler.poolTaskCount[targetIndex]++
-//       return ImageWorkerHandler.workers[targetIndex]
-//     } else { // 创建新线程
-//       const worker = new ImageWorker()
-//       ImageWorkerHandler.workers.push(worker)
-//       ImageWorkerHandler.poolTaskCount[ImageWorkerHandler.workers.length - 1] = 1
-//       return worker
-//     }
-//   }
-// }
-
+export class ImageWorkerHandler {
+  /** 最大线程数 */
+  static readonly WORKER_MAX_COUNT = Math.max(navigator.hardwareConcurrency, 4)
+  /** 创建用于处理图像的线程, 为了防止超过浏览器限制, 最大数量为 4 */
+  static workers: Array<Worker> = []
+  // static workers = Array.from({ length:  }).map(() => new ImageWorker())
+  /** 当前使用的线程 key */
+  static poolTaskCount: Array<number> = []
+  /**
+   * 从线程池中创建或获取线程
+   * @description 这是一个简单的 **依次平均分配** 任务的线程获取函数
+   */
+  static getWorker() {
+    if (ImageWorkerHandler.workers.length >= ImageWorkerHandler.WORKER_MAX_COUNT) { // 使用已有线程
+      let targetIndex = 0
+      for (let index = 0; index < ImageWorkerHandler.poolTaskCount.length; index++) {
+        if (index === 0) continue
+        if (ImageWorkerHandler.poolTaskCount[index] < ImageWorkerHandler.poolTaskCount[index - 1]) {
+          targetIndex = index
+          break
+        }
+      }
+      ImageWorkerHandler.poolTaskCount[targetIndex]++
+      console.log('getWorker: ', targetIndex, ImageWorkerHandler.poolTaskCount)
+      return ImageWorkerHandler.workers[targetIndex]
+    } else { // 创建新线程
+      const worker = new ImageWorker()
+      // 添加事件监听函数
+      ImageWorkerHandler._listen(worker)
+      // const worker = new Worker(ImageWorkerURL)
+      ImageWorkerHandler.workers.push(worker)
+      ImageWorkerHandler.poolTaskCount[ImageWorkerHandler.workers.length - 1] = 1
+      return worker
+    }
+  }
+  private static _listen(worker: Worker) {
+    worker.addEventListener('error', (event) => ImageWorkerHandler._handleWorkerMessageEvent('error', event))
+    worker.addEventListener('message', (event) => ImageWorkerHandler._handleWorkerMessageEvent('message', event))
+    worker.addEventListener('messageerror', (event) => ImageWorkerHandler._handleWorkerMessageEvent('messageerror', event))
+  }
+  /**
+   * 处理事件并触发已添加的事件函数
+   * @param name 事件名称
+   * @param event 事件返回值
+   */
+  private static async _handleWorkerMessageEvent(name: 'error' | 'message' | 'messageerror', event: MessageEvent | ErrorEvent) {
+    const key = ImageWorkerHandler._getEventKey(name, event)
+    if (typeof key === 'number') {
+      if (ImageWorkerHandler._poolTaskEventMap[key]) {
+        if (name === 'error') {
+          await ImageWorkerHandler._poolTaskEventMap[key]!.onError(event as any)
+        } else if (name === 'message') {
+          await ImageWorkerHandler._poolTaskEventMap[key]!.onMessage(event as any)
+        } else if (name === 'messageerror') {
+          await ImageWorkerHandler._poolTaskEventMap[key]!.onError(event as any)
+        }
+        if (ImageWorkerHandler._poolTaskEventMap[key]!.once) {
+          ImageWorkerHandler._poolTaskEventMap[key] = null
+        }
+      } else {
+        console.warn('Missing Event listener - ' + name)
+      }
+    } else {
+      if (name === 'message') {
+        console.warn('message', event)
+      } else {
+        console.error(name, event)
+      }
+      throw new Error('Worker Internal Error: Unknow Message Key')
+    }
+  }
+  private static _getEventKey(name: 'error' | 'message' | 'messageerror', event: MessageEvent | ErrorEvent) {
+    if (name === 'error') {
+      return (event as any).key
+    } else {
+      return (event as MessageEvent).data.key
+    }
+  }
+  /**
+   * 所有的 worker 的自增唯一 key
+   * @description 每次向 worker 发送消息时会向其发送这个 key, 作为本次请求的唯一标识, 同时也作为事件监听函数 {@link _poolTaskEventMap} 的 key
+   */
+  private static _workerRequestIncromentKey: number = 0
+  /** 事件监听函数数组 */
+  private static _poolTaskEventMap: Array<null | { once: boolean, onMessage: (event: MessageEvent) => void, onError: (error: Error) => void }> = []
+  /**
+   * 向 web worker 进程发送一次消息
+   * @param data 消息数据
+   */
+  static async request<T = any>(data: { method: string, key?: number, data: T }): Promise<any> {
+    const worker = await ImageWorkerHandler.getWorker()
+    if (!data.key) data.key = ImageWorkerHandler._workerRequestIncromentKey++
+    // console.log('[web worker] message: ', data)
+    worker.postMessage(data)
+    return new Promise((resolve, reject) => {
+      ImageWorkerHandler._poolTaskEventMap.push({
+        once: true,
+        onMessage(event: MessageEvent) {
+          resolve(event)
+        },
+        onError(error) {
+          reject(error)
+        }
+      })
+    })
+  }
+}
 
 /** 用户自定义图片 */
 export class CustomBackgroundImage {
@@ -154,9 +230,53 @@ export class CustomBackgroundImage {
    * @param file 上传的文件
    */
   static async save(options: CustomRequestOptions) {
+    if (!options.file.file) throw new Error("Missing file");
+    console.log('save >>>>> ', options.file.id)
     try {
-      await DB.add(DBTable.BackgroundImages, options.file)
-      CustomBackgroundImage.images.push(options.file)
+      // 1. 在 indexeddb 中保存图片信息
+      const data: SettledFileInfo = { ...options.file, file: null }
+      await DB.add(DBTable.BackgroundImages, data)
+
+      console.time('上传文件: ' + options.file.id)
+      options.onProgress({ percent: Math.max(30, Math.random() * 75) })
+      // 2. 在 web worker 进程中将原图和缩略图的文件保存到 indexeddb 中
+      if (import.meta.env.DEV) {
+        console.warn('当前处于开发环境, 无法使用 Web Worker, 直接写入 IndexedDB')
+        await Promise.all([
+          // 保存原图
+          DB.add(DBTable.BackgroundImageFiles, { id: options.file.id, file: options.file.file }),
+          // 保存缩略图
+          CustomBackgroundImage.convertImage(options.file.file, 150, false, true)
+            .then(thumbResult => {
+              if (!thumbResult.blob) throw new Error('To Blob Failed')
+              // 保存缩略图 URL
+              options.file.thumbnailUrl = thumbResult.url
+              return DB.add(DBTable.BackgroundThumbImageFiles, { id: options.file.id, file: thumbResult.blob })
+            })
+        ])
+      } else {
+        await Promise.all([
+          // 保存原图
+          ImageWorkerHandler.request({ method: WorkerMessageMethod.saveImage, data: { id: options.file.id, file: options.file.file } }),
+          // 保存缩略图
+          CustomBackgroundImage.convertImage(options.file.file, 150, false, true)
+            .then(thumbResult => {
+              if (!thumbResult.blob) throw new Error('To Blob Failed')
+              // 保存缩略图 URL
+              options.file.thumbnailUrl = thumbResult.url
+              return ImageWorkerHandler.request({
+                method: WorkerMessageMethod.saveThumbImage,
+                data: { id: options.file.id, file: thumbResult.blob }
+              })
+            })
+        ])
+      }
+
+      // 3. 保存
+      data.status = 'finished'
+      // CustomBackgroundImage.images.push(data)
+
+      console.timeEnd('上传文件: ' + options.file.id)
       options.onFinish()
     } catch (err) {
       options.onError()
@@ -170,9 +290,10 @@ export class CustomBackgroundImage {
    * @param image 图片，可以是字符串类型的图片地址或File类型的图片。
    * @param targetHeight 目标高度，可选参数。如果提供了目标高度，则会根据目标高度调整图片大小并保持宽高比。
    * @param toBase64 是否生成 Base64 数据
+   * @param convertToBlob 是否显示的将图片转为 Blob(在传入链接形式的图片时将会执行转换)
    * @returns 包含Blob格式的URL和base64数据的Promise。
    */
-  static convertImage(image: string | File, targetHeight: number = 200, toBase64: boolean = true): Promise<{ url: string, base64: string }> {
+  static convertImage(image: string | File, targetHeight?: number, toBase64: boolean = true, convertToBlob: boolean = false): Promise<{ url: string, blob?: Blob, base64: string }> {
     let imageUrl: string;
   
     if (typeof image === 'string') {
@@ -209,29 +330,51 @@ export class CustomBackgroundImage {
                 reader.onloadend = () => {
                   resolve({
                     url: url,
+                    blob,
                     base64: reader.result as string
                   });
                 };
                 reader.readAsDataURL(blob);
               } else {
-                resolve({ url, base64: '' })
+                resolve({ url, blob, base64: '' })
               }
             } else {
               reject(new Error('Failed to create Blob.'));
             }
           });
         } else {
-          if (toBase64) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              resolve({
-                url: imageUrl,
-                base64: reader.result as string
-              });
-            };
-            reader.readAsDataURL(image instanceof File ? image : new Blob([img.src]));
+          if (convertToBlob && typeof image === 'string') {
+            CustomBackgroundImage.urlToBlob(image)
+              .then(blob => {
+                if (toBase64) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    resolve({
+                      url: imageUrl,
+                      blob,
+                      base64: reader.result as string
+                    });
+                  };
+                  reader.readAsDataURL(blob);
+                } else {
+                  resolve({ url: imageUrl, blob, base64: '' })
+                }
+              })
           } else {
-            resolve({ url: imageUrl, base64: '' })
+            const blob = image instanceof File ? image : undefined
+            if (toBase64) {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                resolve({
+                  url: imageUrl,
+                  blob: image as Blob,
+                  base64: reader.result as string
+                });
+              };
+              reader.readAsDataURL(image instanceof File ? image : new Blob([img.src]));
+            } else {
+              resolve({ url: imageUrl, blob, base64: '' })
+            }
           }
         }
       };
@@ -246,42 +389,70 @@ export class CustomBackgroundImage {
 
   /**
    * 将Base64格式的图片数据转换为Blob URL。
-   * @param base64Data Base64格式的图片数据。
+   * @param url 连接或 Base64 格式的图片数据。
    * @returns Blob URL。
    */
-  static async base64ToBlobUrl(base64Data: string): Promise<string> {
-    const response = await fetch(base64Data);
+  static async urlToBlob(url: string | File): Promise<Blob> {
+    if (url instanceof File) return url
+    const response = await fetch(url);
     const blob = await response.blob();
+    return blob
+  }
+
+  /**
+   * 将Base64格式的图片数据转换为Blob URL。
+   * @param url 连接或 Base64 格式的图片数据。
+   * @returns Blob URL。
+   */
+  static async urlToBlobUrl(url: string): Promise<string> {
+    const blob = await CustomBackgroundImage.urlToBlob(url);
     const blobUrl = URL.createObjectURL(blob);
     return blobUrl;
   }
 
-  static images = reactive<Array<CustomBackgroundImage>>([])
+  static images = ref<Array<CustomBackgroundImage>>([])
 
   static async getImages() {
-    if (CustomBackgroundImage.images.length) return CustomBackgroundImage.images
+    if (CustomBackgroundImage.images.value.length) return CustomBackgroundImage.images.value
     console.time('获取所有背景图片')
     // 1. 读取以保存的所有背景图片
     // console.time('GM_getValue("CustomBackgroundImage")')
     const _images = (await DB.getList<CustomBackgroundImage>(DBTable.BackgroundImages)).map(img => new CustomBackgroundImage(img))
-    Object.assign(CustomBackgroundImage.images, _images)
+    CustomBackgroundImage.images.value = _images
     // console.timeEnd('GM_getValue("CustomBackgroundImage")')
     // 2. 根据原图 File 生成缩略图, 并创建原图和缩略图的 Blob URL
-    for (const img of CustomBackgroundImage.images) {
-      if (img.url) continue // http* 链接格式的图片
+    await Promise.all(CustomBackgroundImage.images.value.map(async img => {
+      if (img.url) return // http* 链接格式的图片
       img.status = 'pending'
-      img.url = URL.createObjectURL(img.file as File)
-      const { url } = await CustomBackgroundImage.convertImage(img.file as File, void 0, false)
-      img.thumbnailUrl = url
-      img.status = 'finished'
-      console.log(url)
-    }
+      if (import.meta.env.DEV) {
+        console.warn('当前处于开发环境, 无法使用 Web Worker, 直接读 IndexedDB')
+        const thumbnailUrl = await DB.get<{ file: File }>(DBTable.BackgroundThumbImageFiles, img.id)
+        img.thumbnailUrl = URL.createObjectURL(thumbnailUrl.file)
+        img.status = 'finished'
+      } else {
+        // console.log('获取缩略图并生成 Blob URL - ' + img.id)
+        const thumbnailUrl = await ImageWorkerHandler.request({ method: WorkerMessageMethod.getThumbImageURL, data: { id: img.id } })
+        img.thumbnailUrl = thumbnailUrl.data.url
+        img.status = 'finished'
+        // console.log('获取缩略图并生成 Blob URL - ' + img.id)
+      }
+    }))
     console.timeEnd('获取所有背景图片')
     return CustomBackgroundImage.images
   }
   static async remove(file: SettledFileInfo) {
     await DB.delete(DBTable.BackgroundImages, file.id)
-    const index = CustomBackgroundImage.images.findIndex(img => img.id === file.id)
-    CustomBackgroundImage.images.splice(index, 1)
+    await DB.delete(DBTable.BackgroundImageFiles, file.id)
+    await DB.delete(DBTable.BackgroundThumbImageFiles, file.id)
+    const index = CustomBackgroundImage.images.value.findIndex(img => img.id === file.id)
+    CustomBackgroundImage.images.value.splice(index, 1)
+  }
+  static async clear() {
+    await Promise.all([
+      DB.clear(DBTable.BackgroundImages),
+      DB.clear(DBTable.BackgroundImageFiles),
+      DB.clear(DBTable.BackgroundThumbImageFiles),
+    ])
+    CustomBackgroundImage.images.value = []
   }
 }
