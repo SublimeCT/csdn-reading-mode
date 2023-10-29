@@ -77,7 +77,8 @@ const onPreview = async (file: SettledFileInfo) => {
 
 const onChange: OnChange = data => {
   // console.warn('onChange', data.fileList.length)
-  Object.assign(images, data.fileList)
+  // Object.assign(images, data.fileList)
+  images.value = data.fileList
 }
 
 let isUploading = ref(false)
