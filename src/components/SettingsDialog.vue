@@ -1,6 +1,6 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
-    <n-modal v-model:show="visibleSettingsDialog" :style="bodyStyle" size="small" preset="card"
+    <n-modal v-model:show="visibleSettingsDialog" :style="bodyStyle" size="small" preset="card" class="userscript-settings-dialog"
       :bordered="false" title="脚本设置">
       <template #header>
         <header>脚本设置</header>
@@ -77,3 +77,16 @@ const onUpdateCheckedCategory = (category: string, checked: boolean) => {
   }
 }
 </script>
+
+<style>
+.userscript-settings-dialog .n-form-item-label span {
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 5px;
+  text-indent: -3px;
+}
+
+.userscript-settings-dialog .n-form-item-label span::after {
+  content: ":";
+}
+</style>

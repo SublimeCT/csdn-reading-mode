@@ -98,11 +98,11 @@ src/
 ```typescript
 // 注册 plugins
 Application
-  .use(Config)
-  .use(Style)
-  .use(CSDN)
-  .use(Intercept)
-  .use(Catalogue)
+  .use(new Config())
+  .use(new Style())
+  .use(new CSDN())
+  .use(new Intercept())
+  .use(new Catalogue())
 ```
 
 对于每个 `plugin`, 都应该先调用 `Application.use()` 进行注册, *很像 `Vue` 注册组件的方式*
@@ -111,7 +111,14 @@ Application
 插件是一个独立的功能模块, 专注于实现某个功能
 
 ### Hooks
-`Hooks` 是在 `Application` 上实现的一层抽象, *用于实现类似于 `Vue` 的生命周期的功能*
+`Hooks` 是在 `Application` 上实现的一层抽象, 每个插件可以通过实现 `Hooks` 函数实现某些功能, *用于实现类似于 `Vue` 的生命周期的功能*, 目前有以下 `hook`:
+
+- `init`: 在脚本初始化时执行, 此时页面还未加载完成, 对应 `Tampermonkey` 的 [document-start](https://www.tampermonkey.net/documentation.php?ext=dhdg&version=4.19.0#meta:run_at)
+- `onLoad`: 在 [DOMContentLoaded](https://developer.mozilla.org/zh-CN/docs/Web/API/Document/DOMContentLoaded_event) 事件触发时执行
+- `onConfigChange(field)`: 在用户修改配置项时触发, `field` 是用户修改的字段名
+- `onPreviewImage?(url: string)`: 用户预览已选择的图片时触发
+
+详见 [AppPlugin.ts](./src/AppPlugin.ts)
 
 ## CHANGELOGS
 

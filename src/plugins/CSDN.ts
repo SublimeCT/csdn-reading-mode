@@ -25,6 +25,12 @@ export class CSDN implements AppPlugin {
   }
   init() {
     this.allowCopy()
+    this.fixedSidebarPosition()
+  }
+  fixedSidebarPosition() {
+    if (window.fixedSidebarInButton) {
+      window.fixedSidebarInButton()
+    }
   }
   /** 解禁复制功能 */
   allowCopy() {
