@@ -445,7 +445,7 @@ export class CustomBackgroundImage {
     await DB.delete(DBTable.BackgroundImageFiles, file.id)
     await DB.delete(DBTable.BackgroundThumbImageFiles, file.id)
     const index = CustomBackgroundImage.images.value.findIndex(img => img.id === file.id)
-    CustomBackgroundImage.images.value.splice(index, 1)
+    // CustomBackgroundImage.images.value.splice(index, 1)
   }
   static async clear() {
     await Promise.all([
