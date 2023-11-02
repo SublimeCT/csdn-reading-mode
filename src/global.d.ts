@@ -7,4 +7,6 @@ interface Window {
   $handleInterceptCSDN?: number | Function
   /** csdn 页面源码中用于固定右下角 sidebar 位置的方法 */
   fixedSidebarInButton(): void
+  /** csdn 页面源码中的全局变量 */
+  copyPopSwitch: boolean
 }

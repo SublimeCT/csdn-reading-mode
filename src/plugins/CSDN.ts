@@ -27,6 +27,16 @@ export class CSDN implements AppPlugin {
     this.allowCopy()
     this.fixedSidebarPosition()
   }
+  onLoad(): void {
+    // 在开发环境中 allowCopy 在源码中的监听 copy / keydown 事件之后执行, 所以无法解除复制
+    // 开发环境直接移除事件, 生产环境使用 allowCopy 注入的解除复制逻辑
+    if (import.meta.env.DEV) {
+      $("#content_views").unbind("keydown")
+      $("#content_views").unbind("copy")
+    } else {
+      this.allowCopy()
+    }
+  }
   fixedSidebarPosition() {
     if (window.fixedSidebarInButton) {
       window.fixedSidebarInButton()
@@ -36,9 +46,11 @@ export class CSDN implements AppPlugin {
   allowCopy() {
     try {
       Toolkit.injectScriptElement('clean-copy-script', `
+        console.log('injent')
         /** 解禁复制功能 */
         try { if (window.hljs) window.hljs.signin = window.hljs.copyCode } catch(err) {};
         try { if (window.mdcp) window.mdcp.signin = window.mdcp.copyCode } catch(err) {};
+        try { if (window.copyPopSwitch) window.copyPopSwitch = false } catch(err) {};
         /** 将 copyright 改为不可写, 防止添加复制事件 */
         if (window.csdn) {
           try {
@@ -46,6 +58,7 @@ export class CSDN implements AppPlugin {
               this._getRewriteCode([
                 { target: 'window.csdn.copyright', key: 'init', value: 'function() { $("#content_views").unbind("copy"); }' },
                 { target: 'window.csdn.copyright', key: 'textData', value: '""' },
+                { target: 'window', key: 'copyPopSwitch', value: 'false' },
               ])
             }
           } catch (err) {}
