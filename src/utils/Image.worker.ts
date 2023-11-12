@@ -6,7 +6,7 @@
  * - [Web Worker - MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_AP)
  */
 
-import { DB, DBTable } from "./AppStorage"
+import { DB, DBTable } from "./DB"
 import { WorkerMessageMethod } from "./WorkerTypes"
 
 self.onmessage = async function (event: MessageEvent) {

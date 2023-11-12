@@ -1,5 +1,5 @@
 import type { CustomRequestOptions, FileInfo, SettledFileInfo } from "naive-ui/es/upload/src/interface"
-import { DB, DBTable } from "./AppStorage"
+import { DB, DBTable } from "./DB"
 import { ImageWorkerHandler } from "./ImageWorkerHandler"
 import { WorkerMessageMethod } from "./WorkerTypes"
 import { ref } from "vue"

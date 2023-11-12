@@ -72,6 +72,10 @@
   }
 }
 
+:root {
+  --userscript-dialog-padding: 15px;
+}
+
 /* 修复与 dark reader 一起使用时背景图片被遮挡的问题 */
 html[data-darkreader-scheme] body { height: auto; }
 body:not(.clean-mode) {

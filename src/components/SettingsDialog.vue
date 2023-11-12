@@ -7,11 +7,12 @@
       </template>
       <n-tabs type="segment">
         <n-tab-pane name="background" tab="🎨 背景">
-          <main class="userscript-settings-dialog-main">
+          <n-scrollbar class="userscript-settings-dialog-main">
             <n-form ref="formRef" :model="config" size="medium" label-placement="top">
-              <n-form-item label="当前背景" path="bgColor">
-                <section>
+              <tips>
+                <p class="tips-row">
                   <div style="margin-bottom: 5px;">
+                    <span>当前背景: </span>
                     <n-button text type="info" @click="onClickBackground">
                       {{ BackgroundImage.currentUrl.name }}
                     </n-button>
@@ -25,18 +26,13 @@
                   下载背景图
                 </n-button> -->
                   </n-space>
-                </section>
-              </n-form-item>
-              <n-form-item label="背景颜色" path="bgColor">
-                <div style="width: 100%;">
-                  <tips>
-                    <div class="tips-row">
-                      <span>页面背景<strong>优先使用背景颜色 </strong></span>
-                      <n-button size="small" secondary type="info">清空背景颜色</n-button>
-                    </div>
-                  </tips>
-                  <n-color-picker v-model:value="config.bgColor" :show-alpha="true" :actions="['clear']"
+                </p>
+              </tips>
+              <n-form-item label="背景颜色(优先使用)" path="bgColor">
+                <div style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
+                  <n-color-picker style="width: calc(100% - 60px);" v-model:value="config.bgColor" :show-alpha="true" :actions="['clear']"
                     :on-complete="() => onChange('bgColor')" />
+                  <n-button size="small" secondary type="info" style="width: 50px;" @click="config.bgColor = '', onChange('bgColor')">清除</n-button>
                 </div>
               </n-form-item>
               <n-form-item label="背景图片类目范围(点选)" path="categorys">
@@ -52,18 +48,18 @@
                 <custom-image v-model:url="config.customUrl"></custom-image>
               </n-form-item>
             </n-form>
-          </main>
+          </n-scrollbar>
         </n-tab-pane>
 
         <n-tab-pane name="page" tab="📃 页面">
-          <main class="userscript-settings-dialog-main">
+          <n-scrollbar class="userscript-settings-dialog-main">
             <span>也卖弄</span>
-          </main>
+          </n-scrollbar>
         </n-tab-pane>
         <n-tab-pane name="about" tab="💡 关于">
-          <main class="userscript-settings-dialog-main">
+          <n-scrollbar class="userscript-settings-dialog-main">
             <a href="https://github.com/SublimeCT/csdn-reading-mode" target="_blank" class="link">GitHub</a>
-          </main>
+          </n-scrollbar>
         </n-tab-pane>
       </n-tabs>
     </n-modal>
@@ -72,7 +68,7 @@
 
 <script setup lang="ts">
 import { StyleValue } from 'vue';
-import { NTag, NImageGroup, NSpace, NImage, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider, NTabs, NTabPane } from 'naive-ui'
+import { NTag, NScrollbar, NSpace, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider, NTabs, NTabPane } from 'naive-ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { Application } from '../Application';
 import { BackgroundImage } from '../utils/BackgroundImage';
@@ -115,44 +111,58 @@ const onUpdateCheckedCategory = (category: string, checked: boolean) => {
 }
 </script>
 
-<style>
-.userscript-settings-dialog .n-form-item-label {
-  position: relative;
+<style lang="scss">
+.userscript-settings-dialog {
+  .n-form-item-label {
+    position: relative;
+  }
+
+  .n-form-item-label::before {
+    content: "";
+    width: 3px;
+    height: 62%;
+    display: block;
+    background-color: var(--n-feedback-text-color-warning);
+    border-radius: calc(var(--n-bar-width) / 2);
+    transition: background-color .3s var(--n-bezier);
+    left: -8px;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+  }
+
+  .n-form-item-label span {
+    font-weight: bold;
+    font-size: 15px;
+    margin-bottom: 5px;
+    /* text-indent: -3px; */
+  }
+
+  .link {
+    color: #2080f0;
+  }
+  .n-card__content {
+    padding: 0;
+    padding-bottom: 0;
+  }
+  .n-tabs-nav {
+    padding: 0 var(--userscript-dialog-padding);
+  }
+  .n-form-item-label span::after {
+    content: ":";
+  }
+
+  .userscript-settings-dialog-main {
+    width: 100%;
+    height: 60vh;
+    margin: 0;
+    padding: 0 var(--userscript-dialog-padding);
+    padding-left: 7px;
+    overflow-y: auto;
+    .n-scrollbar-container {
+      padding-left: 8px;
+    }
+  }
 }
 
-.userscript-settings-dialog .n-form-item-label::before {
-  content: "";
-  width: 3px;
-  height: 62%;
-  display: block;
-  background-color: var(--n-feedback-text-color-warning);
-  border-radius: calc(var(--n-bar-width) / 2);
-  transition: background-color .3s var(--n-bezier);
-  left: -8px;
-  top: 0;
-  bottom: 0;
-  position: absolute;
-}
-
-.userscript-settings-dialog .n-form-item-label span {
-  font-weight: bold;
-  font-size: 15px;
-  margin-bottom: 5px;
-  /* text-indent: -3px; */
-}
-
-.userscript-settings-dialog .link {
-  color: #2080f0;
-}
-.userscript-settings-dialog .n-form-item-label span::after {
-  content: ":";
-}
-
-.userscript-settings-dialog .userscript-settings-dialog-main {
-  width: 100%;
-  height: 60vh;
-  margin: 0;
-  padding-left: 8px;
-  overflow-y: auto;
-}
 </style>

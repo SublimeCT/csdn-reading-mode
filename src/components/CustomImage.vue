@@ -37,7 +37,7 @@ import type { CustomRequestOptions, OnChange, OnFinish, SettledFileInfo } from '
 import { CustomBackgroundImage } from '../utils/CustomBackgroundImage';
 import { Application } from '../Application';
 import { computed, ref } from 'vue';
-import { DB, DBTable } from '../utils/AppStorage';
+import { DB, DBTable } from '../utils/DB';
 import Tips from './Tips.vue'
 import { Toolkit } from '../utils/Toolkit';
 
