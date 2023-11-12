@@ -107,7 +107,6 @@ export class DB {
 
   static async getList<T>(tableName: DBTable, range?: Parameters<IDBObjectStore['getAll']>[0], count?: Parameters<IDBObjectStore['getAll']>[1]) {
     const db = await DB._getBD()
-    console.log('test', db.objectStoreNames.contains(DBTable.BackgroundImageFiles))
     const table = db.transaction([tableName], 'readonly').objectStore(tableName)
     const request = table.getAll(range || null, count)
     const result = await DB._getResultByRequest<Array<T>>(request)

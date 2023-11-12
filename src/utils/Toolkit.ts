@@ -72,4 +72,78 @@ export class Toolkit {
     script.appendChild(code)
     head.appendChild(script)
   }
+
+  /**
+   * 将 Blob 转换为 File 对象
+   * @param {Blob} blob - 要转换的 Blob 对象
+   * @param {string} fileName - 文件名
+   * @returns {File} 转换后的 File 对象
+   */
+  static blobToFile(blob: Blob, fileName: string): File {
+    const file = new File([blob], fileName);
+    return file;
+  }
+
+  /**
+   * 从 URL 获取文件名
+   * @param {string} url - 图片链接
+   * @returns {string} 文件名
+   */
+  static getFileNameFromURL(url: string): string {
+    const urlObj = new URL(url);
+    const path = urlObj.pathname;
+    const segments = path.split("/");
+    const lastSegment = segments[segments.length - 1];
+    const fileName = lastSegment.split("?")[0]; // 移除查询参数
+    return fileName;
+  }
+
+  /**
+   * 通过图片链接获取图片的 File 数据
+   * @param {string} url - 图片链接
+   * @param {string} fileName - 文件名
+   * @returns {Promise<File>} 返回 Promise，包含图片的 File 数据
+   *
+   * @example
+   * ```typescript
+   * const imageUrl = 'https://example.com/image.jpg';
+   * const fileName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+   *
+   * (async () => {
+   *   try {
+   *     const file = await getImageFileFromUrl(imageUrl, fileName);
+   *     // 获取到图片的 File 数据
+   *     console.log(file);
+   *   } catch (error) {
+   *     // 处理错误
+   *     console.error(error);
+   *   }
+   * })();
+   * ```
+   */
+  static async getImageFileFromUrl(url: string, fileName?: string): Promise<File> {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      if (!fileName) { fileName = Toolkit.getFileNameFromURL(url); }
+      fileName += '.' + blob.type.split('/')[1]
+      const file = new File([blob], fileName, { type: blob.type });
+      return file;
+    } catch (error) {
+      throw new Error('Failed to load image');
+    }
+  }
+  static fileToBase64(file: File) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => {
+        reject(error);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 }

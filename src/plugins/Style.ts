@@ -74,4 +74,7 @@ export class Style implements AppPlugin {
     Style.vars['--background-image'] = `url(${url})`
     Style.saveStylesAttrs()
   }
+  onUpdateBackgroundImage(): void {
+    
+  }
 }

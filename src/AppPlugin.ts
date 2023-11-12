@@ -13,4 +13,6 @@ export interface AppPlugin {
    * @param url 图片 URL
    */
   onPreviewImage?(url: string): void
+  /** 刷新背景图片 */
+  onUpdateBackgroundImage?(): void
 }

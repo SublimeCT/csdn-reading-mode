@@ -1,15 +1,39 @@
 <template>
-  <n-config-provider :theme-overrides="themeOverrides">
+  <n-config-provider :theme-overrides="themeOverrides" :locale="zhCN" :data-locale="dateZhCN">
     <n-modal v-model:show="visibleSettingsDialog" :style="bodyStyle" size="small" preset="card" class="userscript-settings-dialog"
       :bordered="false" title="脚本设置">
       <template #header>
         <header>脚本设置</header>
       </template>
       <n-form ref="formRef" :model="config" size="medium" label-placement="top">
-        <n-form-item label="当前背景图" path="bgColor">
-          <n-button text type="info" @click="onClickBackground">
-            {{ BackgroundImage.currentUrl.name }}
-          </n-button>
+        <n-form-item label="背景颜色" path="bgColor">
+          <div style="width: 100%;">
+            <tips>
+              <div class="tips-row">
+                <span>页面背景<strong>优先使用背景颜色 </strong></span>
+                <n-button size="small" secondary type="info">清空背景颜色</n-button>
+              </div>
+            </tips>
+            <n-color-picker v-model:value="config.bgColor" :show-alpha="true" :actions="['clear']"
+              :on-complete="() => onChange('bgColor')" />
+          </div>
+        </n-form-item>
+        <n-form-item label="当前背景" path="bgColor">
+          <section>
+            <div style="margin-bottom: 5px;">
+              <n-button text type="info" @click="onClickBackground">
+                {{ BackgroundImage.currentUrl.name }}
+              </n-button>
+            </div>
+            <n-space size="small">
+              <n-button strong secondary type="info" size="small" @click="application.emit('onUpdateBackgroundImage')">
+                刷新背景图
+              </n-button>
+              <!-- <n-button strong secondary size="small" @click="toSaveBackgroundImage">
+                下载背景图
+              </n-button> -->
+            </n-space>
+          </section>
         </n-form-item>
         <n-form-item label="背景图片类目范围(点选)" path="categorys">
           <n-space size="small">
@@ -26,10 +50,6 @@
         <n-form-item label="自定义背景图片" path="bgColor">
           <custom-image v-model:url="config.customUrl"></custom-image>
         </n-form-item>
-        <n-form-item label="背景颜色" path="bgColor">
-          <n-color-picker v-model:value="config.bgColor" :show-alpha="true" :actions="['clear']"
-            :on-complete="() => onChange('bgColor')" />
-        </n-form-item>
       </n-form>
     </n-modal>
   </n-config-provider>
@@ -40,10 +60,12 @@ import { StyleValue } from 'vue';
 import { NTag, NImageGroup, NSpace, NImage, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider } from 'naive-ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { Application } from '../Application';
-import { BackgroundImage, CustomBackgroundImage } from '../utils/BackgroundImage';
+import { BackgroundImage } from '../utils/BackgroundImage';
 import { config, visibleSettingsDialog } from '../State'
 import { ScriptConfig } from '../ScriptConfig';
 import CustomImage from './CustomImage.vue'
+import { zhCN, dateZhCN } from 'naive-ui'
+import Tips from './Tips.vue'
 
 const bodyStyle: StyleValue = { width: '600px' }
 
@@ -79,14 +101,33 @@ const onUpdateCheckedCategory = (category: string, checked: boolean) => {
 </script>
 
 <style>
+.userscript-settings-dialog .n-form-item-label {
+  position: relative;
+}
+
+.userscript-settings-dialog .n-form-item-label::before {
+  content: "";
+  width: 3px;
+  height: 62%;
+  display: block;
+  background-color: var(--n-feedback-text-color-warning);
+  border-radius: calc(var(--n-bar-width) / 2);
+  transition: background-color .3s var(--n-bezier);
+  left: -8px;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+}
+
 .userscript-settings-dialog .n-form-item-label span {
   font-weight: bold;
   font-size: 15px;
   margin-bottom: 5px;
-  text-indent: -3px;
+  /* text-indent: -3px; */
 }
 
 .userscript-settings-dialog .n-form-item-label span::after {
   content: ":";
 }
+
 </style>

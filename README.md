@@ -7,7 +7,7 @@
 - 为用户提供干净美观的 **沉浸式** 阅读体验
 - 保证在 **默认配置** 下的阅读体验
 - 尽量满足不同用户的 **使用场景**
-- **不收集任何用户信息**, 不发起跨域请求
+- **不收集任何用户信息**, 不以任何名义上传用户信息
 - 保持 **[开源](./LICENSE)免费**
 - 鼓励并支持 **参与贡献**
 
@@ -29,6 +29,14 @@
 - **可设置纯色背景**
 - 显示文章目录
 - 文中代码块 **解除禁用复制**
+
+## 使用
+TODO
+
+1. 在浏览器中安装 [Tampermonkey 插件](https://www.tampermonkey.net/index.php)
+2. 安装此脚本
+3. 进入 csdn 文章页
+4. 点击右下角脚本设置按钮配置脚本
 
 ## ❤️ 贡献
 > 本项目是对于 [旧的脚本](./src/csdn_rewrite.js) 的重构版本, 相比于旧脚本, 新项目基于 [vite-plugin-monkey](https://github.com/lisonge/vite-plugin-monkey) 实现了:
@@ -117,6 +125,7 @@ Application
 - `onLoad`: 在 [DOMContentLoaded](https://developer.mozilla.org/zh-CN/docs/Web/API/Document/DOMContentLoaded_event) 事件触发时执行
 - `onConfigChange(field)`: 在用户修改配置项时触发, `field` 是用户修改的字段名
 - `onPreviewImage?(url: string)`: 用户预览已选择的图片时触发
+- `onUpdateBackgroundImage?()`: 用户点击刷新背景图片
 
 详见 [AppPlugin.ts](./src/AppPlugin.ts)
 
