@@ -101,7 +101,6 @@ export class Toolkit {
   /**
    * 通过图片链接获取图片的 File 数据
    * @param {string} url - 图片链接
-   * @param {string} fileName - 文件名
    * @returns {Promise<File>} 返回 Promise，包含图片的 File 数据
    *
    * @example
@@ -111,9 +110,9 @@ export class Toolkit {
    *
    * (async () => {
    *   try {
-   *     const file = await getImageFileFromUrl(imageUrl, fileName);
-   *     // 获取到图片的 File 数据
-   *     console.log(file);
+   *     const blob = await getImageBlobFromUrl(imageUrl, fileName);
+   *     // 获取到图片的 Blob 数据
+   *     console.log(blob);
    *   } catch (error) {
    *     // 处理错误
    *     console.error(error);
@@ -121,17 +120,10 @@ export class Toolkit {
    * })();
    * ```
    */
-  static async getImageFileFromUrl(url: string, fileName?: string): Promise<File> {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      if (!fileName) { fileName = Toolkit.getFileNameFromURL(url); }
-      fileName += '.' + blob.type.split('/')[1]
-      const file = new File([blob], fileName, { type: blob.type });
-      return file;
-    } catch (error) {
-      throw new Error('Failed to load image');
-    }
+  static async getImageBlobFromUrl(url: string): Promise<Blob> {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return blob
   }
   static fileToBase64(file: File) {
     return new Promise((resolve, reject) => {
@@ -145,5 +137,12 @@ export class Toolkit {
       };
       reader.readAsDataURL(file);
     });
+  }
+  static async convertFileToBlob(file: File): Promise<Blob> {
+    const blob = await file.arrayBuffer();
+    return new Blob([blob], { type: file.type });
+  }
+  static async convertBlobToFile(blob: Blob, fileName: string): Promise<File> {
+    return new File([blob], fileName, { type: blob.type });
   }
 }

@@ -23,7 +23,7 @@
         placeholder="图片链接地址, 例如 https://test.com/test.png" clearable />
       <n-space size="small">
         <n-button strong secondary :disabled="isInvalidImageURL" type="info" size="small" @click="CustomBackgroundImage.saveRemoteImage(imageURL)">添加图片</n-button>
-        <n-button strong secondary type="info" size="small" @click="saveClipboardImage">粘贴图片</n-button>
+        <n-button strong secondary type="info" size="small" @click="CustomBackgroundImage.saveClipboardImage()">粘贴图片</n-button>
         <n-button strong secondary type="error" size="small" @click="removeAll">删除所有图片</n-button>
         <n-button strong secondary type="error" size="small" @click="onDebugLog">debug log</n-button>
       </n-space>
@@ -62,7 +62,6 @@ const customRequest = async (options: CustomRequestOptions) => {
 }
 
 const onRemove = (data: { file: SettledFileInfo, fileList: SettledFileInfo[] }) => {
-  console.log('onRemove', data)
   CustomBackgroundImage.remove(data.file)
 }
 
@@ -72,7 +71,6 @@ const onPreview = async (file: SettledFileInfo) => {
     file.url = URL.createObjectURL(fileRecord.file)
   }
   Application.application.emitPreviewImage(file.url)
-  console.log('onPreview', file)
 }
 
 const onChange: OnChange = data => {
@@ -117,6 +115,11 @@ const removeAll = async () => {
   uploadRef.value?.clear()
 }
 
+/**
+ * 监听粘贴事件
+ * @deprecated 应该直接点击粘贴图片按钮
+ * @param event 粘贴事件对象
+ */
 const onPaste = (event: ClipboardEvent) => {
   if (!event.clipboardData) return console.log('剪切板内未检测到内容')
   const items = event.clipboardData.items;
@@ -156,6 +159,5 @@ const onPaste = (event: ClipboardEvent) => {
     console.log(imageURL)
   }
 }
-const saveClipboardImage = () => {}
 const onDebugLog = () => console.log(images.value)
 </script>

@@ -1,4 +1,4 @@
-import type { CustomRequestOptions, SettledFileInfo } from "naive-ui/es/upload/src/interface"
+import type { CustomRequestOptions, FileInfo, SettledFileInfo } from "naive-ui/es/upload/src/interface"
 import { DB, DBTable } from "./AppStorage"
 import { ImageWorkerHandler } from "./ImageWorkerHandler"
 import { WorkerMessageMethod } from "./WorkerTypes"
@@ -22,6 +22,8 @@ export class CustomBackgroundImage {
   status: "pending" | "uploading" | "finished" | "removed" | "error" = 'pending'
   url?: string | null | undefined
   file?: File | null | undefined
+  /** 图片的 Blob 数据, File 数据在保存到 indexeddb 后会有同源限制, 所以使用 Blob */
+  $blob?: Blob | undefined
   thumbnailUrl?: string | null | undefined
   type?: string | null | undefined
   fullPath?: string | null | undefined
@@ -45,11 +47,12 @@ export class CustomBackgroundImage {
    * 
    * @param file 上传的文件
    */
-  static async save(options: CustomRequestOptions) {
-    if (!options.file.file) throw new Error("Missing file or URL");
+  static async save(options: Omit<CustomRequestOptions, 'file'> & { file: CustomBackgroundImage }) {
+    const image = options.file.$blob || options.file.file
+    if (!image) throw new Error("Missing file / blob");
     try {
       // 1. 在 indexeddb 中保存图片信息
-      const data: SettledFileInfo = { ...options.file, file: null }
+      const data: FileInfo = { ...options.file, file: null }
       await DB.add(DBTable.BackgroundImages, data)
 
       console.time('保存文件: ' + options.file.id)
@@ -59,9 +62,9 @@ export class CustomBackgroundImage {
         console.warn('当前处于开发环境, 无法使用 Web Worker, 直接写入 IndexedDB')
         await Promise.all([
           // 保存原图
-          options.file.url ? () => {} : DB.add(DBTable.BackgroundImageFiles, { id: options.file.id, file: options.file.file }),
+          options.file.url ? () => { } : DB.add(DBTable.BackgroundImageFiles, { id: options.file.id, file: image }),
           // 保存缩略图
-          CustomBackgroundImage.convertImage(options.file.file, CustomBackgroundImage.THUMBNAIL_HEIGHT, false, true)
+          CustomBackgroundImage.convertImage(image, CustomBackgroundImage.THUMBNAIL_HEIGHT, false, true)
             .then(thumbResult => {
               if (!thumbResult.blob) throw new Error('To Blob Failed')
               // 保存缩略图 URL
@@ -72,9 +75,9 @@ export class CustomBackgroundImage {
       } else {
         await Promise.all([
           // 保存原图
-          options.file.url ? () => {} : ImageWorkerHandler.request({ method: WorkerMessageMethod.saveImage, data: { id: options.file.id, file: options.file.file } }),
+          options.file.url ? () => { } : ImageWorkerHandler.request({ method: WorkerMessageMethod.saveImage, data: { id: options.file.id, file: image } }),
           // 保存缩略图
-          CustomBackgroundImage.convertImage(options.file.file, CustomBackgroundImage.THUMBNAIL_HEIGHT, false, true)
+          CustomBackgroundImage.convertImage(image, CustomBackgroundImage.THUMBNAIL_HEIGHT, false, true)
             .then(thumbResult => {
               if (!thumbResult.blob) throw new Error('To Blob Failed')
               // 保存缩略图 URL
@@ -103,17 +106,17 @@ export class CustomBackgroundImage {
    * 将图片转换为指定高度并保持宽高比的Blob格式的URL和base64数据。
    * @description created by ChatGPT 😊
    * @param image 图片，可以是字符串类型的图片地址或File类型的图片。
-   * @param targetHeight 目标高度，可选参数。如果提供了目标高度，则会根据目标高度调整图片大小并保持宽高比。
+   * @param targetHeight 目标高度，可选参数。如果提供了目标高度，则会根据目标高度调整图片大小并保持宽高比; 如果值为 'canvas', 则强制使用 `canvas` 绘制
    * @param toBase64 是否生成 Base64 数据
    * @param convertToBlob 是否显示的将图片转为 Blob(在传入链接形式的图片时将会执行转换)
    * @returns 包含Blob格式的URL和base64数据的Promise。
    */
-  static convertImage(image: string | File, targetHeight?: number, toBase64: boolean = true, convertToBlob: boolean = false): Promise<{ url: string, blob?: Blob, base64: string }> {
+  static convertImage(image: string | File | Blob, targetHeight?: number | 'canvas', toBase64: boolean = true, convertToBlob: boolean = false): Promise<{ url: string, blob?: Blob, base64: string }> {
     let imageUrl: string;
 
     if (typeof image === 'string') {
       imageUrl = image;
-    } else if (image instanceof File) {
+    } else if (image instanceof Blob) {
       imageUrl = URL.createObjectURL(image);
     } else {
       throw new Error('Invalid image parameter');
@@ -125,6 +128,7 @@ export class CustomBackgroundImage {
       img.onload = () => {
         let canvas: HTMLCanvasElement | null = null;
         if (targetHeight) {
+          targetHeight = targetHeight === 'canvas' ? img.height : targetHeight
           const aspectRatio = img.width / img.height;
           const targetWidth = targetHeight * aspectRatio;
 
@@ -214,19 +218,10 @@ export class CustomBackgroundImage {
     return blob
   }
 
-  /**
-   * 将Base64格式的图片数据转换为Blob URL。
-   * @param url 连接或 Base64 格式的图片数据。
-   * @returns Blob URL。
-   */
-  static async urlToBlobUrl(url: string): Promise<string> {
-    const blob = await CustomBackgroundImage.urlToBlob(url);
-    const blobUrl = URL.createObjectURL(blob);
-    return blobUrl;
-  }
-
+  /** 所有保存的图片数据(响应式) */
   static images = ref<Array<CustomBackgroundImage>>([])
 
+  /** 从 indexeddb 中获取所有图片数据 */
   static async getImages() {
     if (CustomBackgroundImage.images.value.length) return CustomBackgroundImage.images.value
     console.time('获取所有背景图片')
@@ -255,6 +250,10 @@ export class CustomBackgroundImage {
     console.timeEnd('获取所有背景图片')
     return CustomBackgroundImage.images
   }
+  /**
+   * 删除以保存的图片
+   * @param file 图片
+   */
   static async remove(file: SettledFileInfo) {
     await DB.delete(DBTable.BackgroundImages, file.id)
     await DB.delete(DBTable.BackgroundImageFiles, file.id)
@@ -262,6 +261,9 @@ export class CustomBackgroundImage {
     // const index = CustomBackgroundImage.images.value.findIndex(img => img.id === file.id)
     // CustomBackgroundImage.images.value.splice(index, 1)
   }
+  /**
+   * 删除所有以保存的图片
+   */
   static async clear() {
     await Promise.all([
       DB.clear(DBTable.BackgroundImages),
@@ -269,9 +271,6 @@ export class CustomBackgroundImage {
       DB.clear(DBTable.BackgroundThumbImageFiles),
     ])
     CustomBackgroundImage.images.value = []
-  }
-  static async addRemoteImage(url: string) {
-
   }
 
   /**
@@ -285,60 +284,10 @@ export class CustomBackgroundImage {
   }
 
   /**
-   * 获取图片的 Blob 数据
-   * @param {string} url - 图片的 URL
-   * @returns {Promise<Blob>} 包含图片 Blob 数据的 Promise 对象
+   * 直接调用 a-upload 的请求方法保存图片
+   * @param image 自定义图片对象
    */
-  static fetchImageBlob(url: string): Promise<Blob> {
-    return new Promise<Blob>((resolve, reject) => {
-      fetch(url, {
-        // mode: 'cors', // 指定跨域请求模式
-        // headers: {
-        //   'Access-Control-Allow-Origin': '*', // 设置允许的跨域来源
-        // },
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('图片获取失败');
-          }
-          if (!CustomBackgroundImage._isImageResponse(response)) {
-            throw new Error('为检测到有效的图片');
-          }
-          return response.blob();
-        })
-        .then(blob => resolve(blob))
-        .catch(error => {
-          if (error instanceof TypeError && error.message.includes('cross-origin')) {
-            reject(new Error('图片文件跨域, 请尝试手动上传图片或粘贴图片'));
-          } else {
-            reject(error);
-          }
-        });
-    });
-  }
-  // static async fromImageURL(url: string, image: Omit<CustomBackgroundImage, 'url' | 'thumbnailUrl'>) {
-  //   const file = await Toolkit.getImageData(url)
-  //   // const file = Toolkit.blobToFile(blob, image.name + '.png')
-  //   const thumbnailResult = await CustomBackgroundImage.convertImage(file, CustomBackgroundImage.THUMBNAIL_HEIGHT, false, true)
-  //   return new CustomBackgroundImage({
-  //     ...image,
-  //     file,
-  //     url,
-  //     thumbnailUrl: thumbnailResult.url,
-  //     percentage: 0,
-  //     batchId: image.id,
-  //   })
-  // }
-  static async saveImageURL(url: string, image: Omit<CustomBackgroundImage, 'url' | 'thumbnailUrl'>) {
-    const file = await Toolkit.getImageFileFromUrl(url, image.id)
-    console.warn(file)
-    const img = new CustomBackgroundImage({
-      ...image,
-      file,
-      type: file.type,
-      url,
-      batchId: image.id || null,
-    })
+  static async saveImage(img: CustomBackgroundImage) {
     const options: CustomRequestOptions = {
       file: img as SettledFileInfo,
       onProgress: function (e: { percent: number }): void {
@@ -355,13 +304,65 @@ export class CustomBackgroundImage {
     await CustomBackgroundImage.save(options)
     return img
   }
+  /**
+   * 保存 URL 格式的图片
+   * @param url 图片 URL
+   */
   static async saveRemoteImage(url: string) {
     const id = 'url-' + Date.now()
-    const img = await CustomBackgroundImage.saveImageURL(url, {
+    const image: Omit<CustomBackgroundImage, 'url' | 'thumbnailUrl'> = {
       id,
       name: id,
       status: 'finished'
+    }
+    const blob = await Toolkit.getImageBlobFromUrl(url)
+    const img = new CustomBackgroundImage({
+      ...image,
+      file: null,
+      $blob: blob,
+      type: blob.type,
+      url,
+      batchId: image.id || null,
     })
+    await CustomBackgroundImage.saveImage(img)
+    Reflect.deleteProperty(img, '$blob')
     CustomBackgroundImage.images.value.push(img)
+  }
+  static async saveClipboardImage() {
+    const image = await CustomBackgroundImage.getClipboardImage()
+    const fileName = `copy-${Date.now()}.${image.type.split('/')[1]}`
+    const id = fileName.split('.')[0]
+    const img = new CustomBackgroundImage({
+      id,
+      name: fileName,
+      file: null,
+      $blob: image,
+      type: image.type,
+      status: 'finished',
+      batchId: id,
+    })
+    await CustomBackgroundImage.saveImage(img)
+    Reflect.deleteProperty(img, '$blob')
+    CustomBackgroundImage.images.value.push(img)
+  }
+  static async getClipboardImage() {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+
+      for (const clipboardItem of clipboardItems) {
+        const types = clipboardItem.types;
+
+        for (const type of types) {
+          if (type.startsWith('image/')) {
+            const blob = await clipboardItem.getType(type);
+            return blob
+          }
+        }
+      }
+
+      throw new Error('剪贴板中没有图片数据');
+    } catch (error) {
+      throw new Error('获取剪贴板数据失败');
+    }
   }
 }
