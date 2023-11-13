@@ -3,6 +3,7 @@ import { Toolkit } from "../utils/Toolkit"
 import { SIDEBAR_SELECTOR, ScriptConfig } from "../ScriptConfig"
 import { AppPlugin } from "../AppPlugin"
 import { config, visibleSidebar } from "../State"
+import { BackgroundImage } from "../utils/BackgroundImage"
 
 export class Config implements AppPlugin {
   /** 初始化脚本配置 */
@@ -25,5 +26,13 @@ export class Config implements AppPlugin {
 
   onConfigChange(field: keyof ScriptConfig): void {
     AppStorage.setValue('settings', JSON.stringify(config))
+  }
+  onChangeDynamicBackground(dynamic: boolean) {
+    if (dynamic) {
+      config.fixedImageId = ''
+    } else {
+      config.fixedImageId = BackgroundImage.currentImage.id
+    }
+    this.onConfigChange('fixedImageId')
   }
 }

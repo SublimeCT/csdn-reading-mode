@@ -11,28 +11,38 @@
             <n-form ref="formRef" :model="config" size="medium" label-placement="top">
               <tips>
                 <p class="tips-row">
-                  <div style="margin-bottom: 5px;">
-                    <span>当前背景: </span>
-                    <n-button text type="info" @click="onClickBackground">
-                      {{ BackgroundImage.currentUrl.name }}
-                    </n-button>
-                  </div>
                   <n-space size="small">
-                    <n-button strong secondary type="info" size="small"
+                    <n-button strong secondary type="info" size="small" :disabled="!dynamicBackgroundImage"
                       @click="application.emit('onUpdateBackgroundImage')">
-                      刷新背景图
+                      刷新背景
                     </n-button>
-                    <!-- <n-button strong secondary size="small" @click="toSaveBackgroundImage">
-                  下载背景图
-                </n-button> -->
+                    <n-switch v-model:value="dynamicBackgroundImage" size="small"
+                      @change="onChangeDynamicBackgroundImage">
+                      <template #checked>
+                        随机背景
+                      </template>
+                      <template #unchecked>
+                        固定背景
+                      </template>
+                    </n-switch>
+                    <n-switch v-model:value="config.enableBaiduSkin" size="small"
+                      @change="() => application.emit('onUpdateBackgroundImage')">
+                      <template #checked>
+                        启用内置背景
+                      </template>
+                      <template #unchecked>
+                        禁用内置背景
+                      </template>
+                    </n-switch>
                   </n-space>
                 </p>
               </tips>
               <n-form-item label="背景颜色(优先使用)" path="bgColor">
                 <div style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
-                  <n-color-picker style="width: calc(100% - 60px);" v-model:value="config.bgColor" :show-alpha="true" :actions="['clear']"
-                    :on-complete="() => onChange('bgColor')" />
-                  <n-button size="small" secondary type="info" style="width: 50px;" @click="config.bgColor = '', onChange('bgColor')">清除</n-button>
+                  <n-color-picker style="width: calc(100% - 60px);" v-model:value="config.bgColor" :show-alpha="true"
+                    :actions="['clear']" :on-complete="() => onChangeBgColor()" />
+                  <n-button size="small" secondary type="info" style="width: 50px;"
+                    @click="config.bgColor = '', onChangeBgColor()">清除</n-button>
                 </div>
               </n-form-item>
               <n-form-item label="背景图片类目范围(点选)" path="categorys">
@@ -67,8 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import { StyleValue } from 'vue';
-import { NTag, NScrollbar, NSpace, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider, NTabs, NTabPane } from 'naive-ui'
+import { StyleValue, ref } from 'vue';
+import { NTag, NScrollbar, NSpace, NSwitch, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider, NTabs, NTabPane } from 'naive-ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { Application } from '../Application';
 import { BackgroundImage } from '../utils/BackgroundImage';
@@ -96,17 +106,28 @@ const themeOverrides: GlobalThemeOverrides = {
  */
 const onChange = (field: keyof ScriptConfig) => application.emitConfigChanged(field)
 
-const onClickBackground = () => {
-  if (BackgroundImage.currentUrl.url) {
-    window.open(BackgroundImage.currentUrl.url)
-  }
-}
-
 const onUpdateCheckedCategory = (category: string, checked: boolean) => {
   if (checked && !config.categorys.includes(category)) {
     config.categorys.push(category)
   } else {
     config.categorys = config.categorys.filter(c => c !== category)
+  }
+  onChange('categorys')
+}
+
+const onChangeBgColor = () => {
+  onChange('bgColor')
+  // 若背景颜色清空则刷新背景图片
+  if (!config.bgColor) application.emit('onUpdateBackgroundImage')
+}
+
+/** 是否使用随机背景 */
+const dynamicBackgroundImage = ref(!config.fixedImageId)
+/** 修改是否使用随机背景 */
+const onChangeDynamicBackgroundImage = () => {
+  application.emit('onChangeDynamicBackground', dynamicBackgroundImage.value)
+  if (dynamicBackgroundImage.value) {
+    application.emit('onUpdateBackgroundImage')
   }
 }
 </script>
@@ -141,13 +162,16 @@ const onUpdateCheckedCategory = (category: string, checked: boolean) => {
   .link {
     color: #2080f0;
   }
+
   .n-card__content {
     padding: 0;
     padding-bottom: 0;
   }
+
   .n-tabs-nav {
     padding: 0 var(--userscript-dialog-padding);
   }
+
   .n-form-item-label span::after {
     content: ":";
   }
@@ -159,10 +183,9 @@ const onUpdateCheckedCategory = (category: string, checked: boolean) => {
     padding: 0 var(--userscript-dialog-padding);
     padding-left: 7px;
     overflow-y: auto;
+
     .n-scrollbar-container {
       padding-left: 8px;
     }
   }
-}
-
-</style>
+}</style>

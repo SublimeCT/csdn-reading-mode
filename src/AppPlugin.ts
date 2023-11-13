@@ -1,3 +1,4 @@
+import type { SettledFileInfo } from "naive-ui/es/upload/src/interface"
 import { ScriptConfig } from "./ScriptConfig"
 
 /** 所有的 hooks */
@@ -10,9 +11,11 @@ export interface AppPlugin {
   onConfigChange?(field: keyof ScriptConfig): void
   /**
    * 预览指定背景图
-   * @param url 图片 URL
+   * @param file 图片 file
    */
-  onPreviewImage?(url: string): void
+  onPreviewImage?(url: SettledFileInfo): void
   /** 刷新背景图片 */
   onUpdateBackgroundImage?(): void
+  /** 用户修改是否使用随机背景选项 */
+  onChangeDynamicBackground?(dynamic: boolean): void
 }

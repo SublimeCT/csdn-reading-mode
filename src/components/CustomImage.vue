@@ -70,7 +70,7 @@ const onPreview = async (file: SettledFileInfo) => {
     const fileRecord = await DB.get<{ file: File }>(DBTable.BackgroundImageFiles, file.id)
     file.url = URL.createObjectURL(fileRecord.file)
   }
-  Application.application.emitPreviewImage(file.url)
+  Application.application.emitPreviewImage(file)
 }
 
 const onChange: OnChange = data => {

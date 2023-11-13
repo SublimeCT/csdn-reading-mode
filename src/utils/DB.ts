@@ -92,11 +92,11 @@ export class DB {
     return result
   }
 
-  static async getAllKeys<T extends ReturnType<IDBObjectStore['getAllKeys']> = ReturnType<IDBObjectStore['getAllKeys']>>(tableName: DBTable, range?: Parameters<IDBObjectStore['getAllKeys']>[0], count?: Parameters<IDBObjectStore['getAllKeys']>[1]) {
+  static async getAllKeys<T extends IDBValidKey = IDBValidKey>(tableName: DBTable, range?: Parameters<IDBObjectStore['getAllKeys']>[0], count?: Parameters<IDBObjectStore['getAllKeys']>[1]) {
     const db = await DB._getBD()
     const table = db.transaction([tableName], 'readonly').objectStore(tableName)
     const request = table.getAllKeys(range || null, count)
-    const result = await DB._getResultByRequest<T>(request)
+    const result = await DB._getResultByRequest<Array<T>>(request)
     return result
   }
 

@@ -1,3 +1,4 @@
+import type { SettledFileInfo } from "naive-ui/es/upload/src/interface"
 import { AppPlugin } from "./AppPlugin"
 import { ScriptConfig } from "./ScriptConfig"
 
@@ -23,10 +24,10 @@ export class Application {
    * 触发钩子函数
    * @param hook 钩子事件函数名
    */
-  emit(hook: keyof AppPlugin) {
+  emit(hook: keyof AppPlugin, ...args: Array<any>) {
     for (const plugin of Application.plugins) {
       if (typeof plugin[hook] === 'function') {
-        (plugin[hook] as Function)()
+        (plugin[hook] as Function)(...args)
       }
     }
   }
@@ -43,11 +44,18 @@ export class Application {
 
   /**
    * 预览指定背景图
-   * @param url 图片 URL
+   * @param file 图片 file
    */
-  emitPreviewImage(url: string) {
+  emitPreviewImage(file: SettledFileInfo) {
     for (const plugin of Application.plugins) {
-      plugin.onPreviewImage && plugin.onPreviewImage(url)
+      plugin.onPreviewImage && plugin.onPreviewImage(file)
+    }
+  }
+
+  emitChangeDynamicIamge(dynamic: boolean) {
+    this.emit('onChangeDynamicBackground', dynamic)
+    if (dynamic) {
+      this.emit('onUpdateBackgroundImage')
     }
   }
 }

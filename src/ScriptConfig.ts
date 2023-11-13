@@ -9,9 +9,19 @@ export class ScriptConfig {
   categorys: Array<string> = []
   /** 图片集合 */
   imgs: Array<string> = []
-  /** 自定义链接 */
+  /**
+   * 自定义链接
+   * @deprecated 新脚本不再使用固定链接, 统一改为图片 ID
+   */
   customUrl: string = ''
-  /** 纯色背景 */
+  /**
+   * 固定使用的图片 ID
+   * @description 如果存在则固定使用此图片
+   */
+  fixedImageId: string = ''
+  /** 是否使用百度搜索皮肤的随机背景图片 */
+  enableBaiduSkin: boolean = true
+  /** 纯色背景, 优先级高于图片 */
   bgColor: string = ''
   /** 默认是否隐藏设置按钮 */
   defaultHideMenu: boolean = false

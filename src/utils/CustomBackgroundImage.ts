@@ -221,14 +221,25 @@ export class CustomBackgroundImage {
   /** 所有保存的图片数据(响应式) */
   static images = ref<Array<CustomBackgroundImage>>([])
 
+  /** 从本地获取用户以保存的自定义图片 */
+  static async getLocaleImages() {
+    const localeImages = await DB.getList<CustomBackgroundImage>(DBTable.BackgroundImages)
+    return localeImages.map(img => new CustomBackgroundImage(img))
+  }
+
+  /** 从本地获取用户以保存的自定义图片 ID list */
+  static async getLocaleImageIdList() {
+    const localeImages = await DB.getAllKeys<string>(DBTable.BackgroundImages)
+    return localeImages
+  }
+
   /** 从 indexeddb 中获取所有图片数据 */
   static async getImages() {
     if (CustomBackgroundImage.images.value.length) return CustomBackgroundImage.images.value
     console.time('获取所有背景图片')
     // 1. 读取以保存的所有背景图片
     // console.time('GM_getValue("CustomBackgroundImage")')
-    const _images = (await DB.getList<CustomBackgroundImage>(DBTable.BackgroundImages)).map(img => new CustomBackgroundImage(img))
-    CustomBackgroundImage.images.value = _images
+    CustomBackgroundImage.images.value = await CustomBackgroundImage.getLocaleImages()
     // console.timeEnd('GM_getValue("CustomBackgroundImage")')
     // 2. 根据原图 File 生成缩略图, 并创建原图和缩略图的 Blob URL
     await Promise.all(CustomBackgroundImage.images.value.map(async img => {
@@ -249,6 +260,18 @@ export class CustomBackgroundImage {
     }))
     console.timeEnd('获取所有背景图片')
     return CustomBackgroundImage.images
+  }
+
+  /** 通过 ID 获取图片的 Blog URL */
+  static async getImageUrlByID(id: string) {
+    const image = await DB.get<{ id: string, file: Blob }>(DBTable.BackgroundImageFiles, id)
+    return URL.createObjectURL(image.file)
+  }
+
+  /** 通过 ID 获取(URL 链接形式的)图片的 Image URL */
+  static async getUrlByImageID(id: string) {
+    const image = await DB.get<CustomBackgroundImage>(DBTable.BackgroundImages, id)
+    return image.url as string
   }
   /**
    * 删除以保存的图片
