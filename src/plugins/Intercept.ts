@@ -1,5 +1,6 @@
 import { AppPlugin } from "../AppPlugin"
 
+/** 用于向页面内注入 JS 或修改变量值 */
 export class Intercept implements AppPlugin {
   init() {
     this.interceptCSDN()

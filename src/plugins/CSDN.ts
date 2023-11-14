@@ -7,6 +7,7 @@ interface RewriteCode {
   value: string,
 }
 
+/** 用于劫持或修改 window.csdn 下的属性值 */
 export class CSDN implements AppPlugin {
   private _getRewriteCode(code: RewriteCode | Array<RewriteCode>) {
     const _code = Array.isArray(code) ? code : [code]

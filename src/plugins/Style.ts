@@ -13,11 +13,11 @@ export class StyleVars {
   '--display-recommend-box': string = ''
   '--display-copyright': string = ''
   '--display-catalogue': string = ''
-  static getVars(): StyleVars {
-    const vars = new StyleVars()
+  static getVars(defaultVars?: StyleVars): StyleVars {
+    const vars = defaultVars || new StyleVars()
     vars["--source-link-wrapper-display"] = config.showSourceLink ? 'inline-flex' : 'none'
     vars["--background-color"] = config.bgColor || '#EAEAEA'
-    vars['--background-image'] = 'none' // 先设置为 none; 再异步更新
+    vars['--background-image'] = defaultVars ? defaultVars['--background-image'] : 'none' // 先设置为 none; 再异步更新
     vars['--article-weight'] = config.articleWeight
     vars['--display-recommend-box'] = config.hideRecommendBox ? 'none' : 'block'
     vars['--display-copyright'] = config.hideCopyright ? 'none' : 'block'
@@ -28,8 +28,13 @@ export class StyleVars {
 
 export class Style implements AppPlugin {
   static vars: StyleVars = new StyleVars()
-  static saveStylesAttrs() {
+  /**
+   * 按已有配置保存 css 变量
+   * @param update 是否更新 vars
+   */
+  static saveStylesAttrs(update?: boolean) {
     if (!document.body) return console.warn('Missing <body>')
+    if (update) StyleVars.getVars(Style.vars)
     for (const k in Style.vars) {
       if (k.indexOf('--') === 0) document.body.style.setProperty(k, Style.vars[k as keyof StyleVars])
     }
@@ -51,9 +56,20 @@ export class Style implements AppPlugin {
     Style.updateBackgroundIamge()
     // 3. 移除黑色背景色的皮肤样式 css 文件
     this._removeSkinCss()
+    this._disabledDarkSkin()
   }
   onLoad() {
     Style.saveStylesAttrs()
+    this._disabledDarkSkin()
+  }
+  /** 禁用 dark skin */
+  private _disabledDarkSkin() {
+    const sheets = document.querySelectorAll('link')
+    for (const sheet of Array.from(sheets)) {
+      if (sheet.href.indexOf('template/themes_skin/skin-') > 0) {
+        sheet.setAttribute('disabled', 'disabled')
+      }
+    }
   }
   /** 移除黑色背景色的皮肤样式 css 文件 */
   private _removeSkinCss() {
@@ -77,7 +93,7 @@ export class Style implements AppPlugin {
         }
         break
     }
-    Style.saveStylesAttrs()
+    Style.saveStylesAttrs(true)
   }
   /**
    * 预览指定背景图

@@ -13,8 +13,7 @@
                 <div class="tips-row" style="display: flex; justify-content: space-between; align-items: center;">
                   <aside>
                     <n-space size="small">
-                      <n-switch v-model:value="dynamicBackgroundImage"
-                        @change="onChangeDynamicBackgroundImage">
+                      <n-switch v-model:value="dynamicBackgroundImage" @change="onChangeDynamicBackgroundImage">
                         <template #checked>
                           🔀 随机背景
                         </template>
@@ -64,7 +63,18 @@
 
         <n-tab-pane name="page" tab="📃 页面">
           <n-scrollbar class="userscript-settings-dialog-main">
-            <span>也卖弄</span>
+            <n-form ref="formRef" :model="config" size="medium" label-placement="top">
+              <n-form-item label="是否显示目录栏" path="showCatalogue">
+                <n-switch v-model:value="config.showCatalogue" @change="onChange('showCatalogue')">
+                  <template #checked>
+                    显示
+                  </template>
+                  <template #unchecked>
+                    隐藏
+                  </template>
+                </n-switch>
+              </n-form-item>
+            </n-form>
           </n-scrollbar>
         </n-tab-pane>
         <n-tab-pane name="about" tab="💡 关于">
@@ -135,9 +145,12 @@ const onChangeDynamicBackgroundImage = () => {
 
 <style lang="scss">
 .userscript-settings-dialog {
-  main, aside {
+
+  main,
+  aside {
     margin: 0;
   }
+
   .n-form-item-label {
     position: relative;
   }

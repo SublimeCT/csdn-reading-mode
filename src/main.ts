@@ -7,6 +7,7 @@ import { Style } from './plugins/Style';
 import { CSDN } from './plugins/CSDN';
 import { Intercept } from './plugins/Intercept';
 import { Catalogue } from './plugins/Catalogue';
+import { Pagination } from './plugins/Pagination';
 
 const main = async () => {
   // 注册 plugins
@@ -16,6 +17,7 @@ const main = async () => {
     .use(new CSDN())
     .use(new Intercept())
     .use(new Catalogue())
+    .use(new Pagination())
 
   const application = Application.application
 

@@ -31,7 +31,7 @@ export class ScriptConfig {
   /** 默认是否隐藏底部版权信息 */
   hideCopyright: boolean = false
   /** 默认是否显示目录栏 */
-  showCatalogue: boolean = false
+  showCatalogue: boolean = true
   /** 是否匹配原文链接 */
   showSourceLink: boolean = true
   /** 文章宽度百分比 */

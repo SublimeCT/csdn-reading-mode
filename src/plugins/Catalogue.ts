@@ -1,4 +1,5 @@
 import { AppPlugin } from "../AppPlugin"
+import { ScriptConfig } from "../ScriptConfig"
 import { config } from "../State"
 import { Style } from "./Style"
 
@@ -8,8 +9,8 @@ export class Catalogue implements AppPlugin {
   }
 
   syncShowCatalogue() {
-    Style.saveStylesAttrs()
     if (config.showCatalogue && document.getElementById('groupfile')) {
+      window.fixedSidebarInButton()
       document.body.setAttribute('show-catalogue', '')
       if (window.$csdn && window.$csdn.fixedSidebar) {
         window.$csdn.fixedSidebar({
@@ -27,5 +28,10 @@ export class Catalogue implements AppPlugin {
     } else {
       document.body.removeAttribute('show-catalogue')
     }
+  }
+
+  onConfigChange(field: keyof ScriptConfig): void {
+    if (field !== 'showCatalogue') return
+    this.syncShowCatalogue()
   }
 }
