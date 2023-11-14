@@ -10,32 +10,33 @@
           <n-scrollbar class="userscript-settings-dialog-main">
             <n-form ref="formRef" :model="config" size="medium" label-placement="top">
               <tips>
-                <p class="tips-row">
-                  <n-space size="small">
-                    <n-button strong secondary type="info" size="small" :disabled="!dynamicBackgroundImage"
-                      @click="application.emit('onUpdateBackgroundImage')">
-                      刷新背景
-                    </n-button>
-                    <n-switch v-model:value="dynamicBackgroundImage" size="small"
-                      @change="onChangeDynamicBackgroundImage">
-                      <template #checked>
-                        随机背景
-                      </template>
-                      <template #unchecked>
-                        固定背景
-                      </template>
-                    </n-switch>
-                    <n-switch v-model:value="config.enableBaiduSkin" size="small"
-                      @change="() => application.emit('onUpdateBackgroundImage')">
-                      <template #checked>
-                        启用内置背景
-                      </template>
-                      <template #unchecked>
-                        禁用内置背景
-                      </template>
-                    </n-switch>
-                  </n-space>
-                </p>
+                <div class="tips-row" style="display: flex; justify-content: space-between; align-items: center;">
+                  <aside>
+                    <n-space size="small">
+                      <n-switch v-model:value="dynamicBackgroundImage"
+                        @change="onChangeDynamicBackgroundImage">
+                        <template #checked>
+                          🔀 随机背景
+                        </template>
+                        <template #unchecked>
+                          📌 固定背景
+                        </template>
+                      </n-switch>
+                    </n-space>
+                  </aside>
+                  <main>
+                    <n-space size="small">
+                      <n-button strong secondary type="info" size="small" :disabled="!dynamicBackgroundImage"
+                        @click="application.emit('onUpdateBackgroundImage')">
+                        🎲 刷新背景
+                      </n-button>
+                      <n-button strong secondary type="info" size="small" :disabled="!!config.bgColor"
+                        @click="BackgroundImage.onOpenBackgroundImage">
+                        🔍 查看背景
+                      </n-button>
+                    </n-space>
+                  </main>
+                </div>
               </tips>
               <n-form-item label="背景颜色(优先使用)" path="bgColor">
                 <div style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
@@ -45,7 +46,7 @@
                     @click="config.bgColor = '', onChangeBgColor()">清除</n-button>
                 </div>
               </n-form-item>
-              <n-form-item label="背景图片类目范围(点选)" path="categorys">
+              <n-form-item label="内置(百度皮肤)背景图片类目范围(点选)" path="categorys">
                 <n-space size="small">
                   <n-tag v-for="(ids, category) in BackgroundImage.IMG_CATEGORYS"
                     :checked="config.categorys.includes(category)" checkable type="warning"
@@ -134,6 +135,9 @@ const onChangeDynamicBackgroundImage = () => {
 
 <style lang="scss">
 .userscript-settings-dialog {
+  main, aside {
+    margin: 0;
+  }
   .n-form-item-label {
     position: relative;
   }
@@ -188,4 +192,5 @@ const onChangeDynamicBackgroundImage = () => {
       padding-left: 8px;
     }
   }
-}</style>
+}
+</style>

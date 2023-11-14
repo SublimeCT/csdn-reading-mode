@@ -1,6 +1,7 @@
 import { Toolkit } from "../utils/Toolkit"
 import { config } from "../State"
 import { CustomBackgroundImage } from "./CustomBackgroundImage"
+import { DEFAULT_CATEGORYS } from "../ScriptConfig"
 
 export enum BackgroundImageType {
   /** 百度皮肤背景图 */
@@ -70,15 +71,20 @@ export class BackgroundImage {
 
   /** 获取新的背景图片 ID */
   static async getImage() {
+    // 使用固定的背景图
+    if (config.fixedImageId) return BackgroundImage.currentImage = new BackgroundImage(config.fixedImageId)
     const idList: Array<string> = []
     // 1. 加入百度皮肤
-    if (config.enableBaiduSkin) {
-      const ids = BackgroundImage._getBaiduSkinIdList()
-      idList.push(...ids)
-    }
+    const baiduImageIds = BackgroundImage._getBaiduSkinIdList()
+    idList.push(...baiduImageIds)
     // 2. 加入自定义图片
     const ids = await CustomBackgroundImage.getLocaleImageIdList()
     idList.push(...ids)
+    // 如果没有获取到任何背景图片 id, 则使用百度皮肤默认类目下的图片
+    if (idList.length === 0) {
+      console.log('如果没有获取到任何背景图片 id, 则使用百度皮肤默认类目下的图片')
+      idList.push(...BackgroundImage._getBaiduSkinIdList(DEFAULT_CATEGORYS))
+    }
     // 3. 从 ID list 中随机获取一个 image ID
     const id = idList[Toolkit.getRandomInterger(idList.length)]
     BackgroundImage.currentImage = new BackgroundImage(id)
@@ -86,14 +92,24 @@ export class BackgroundImage {
   }
 
   /** 获取所有符合条件的背景图 */
-  private static _getBaiduSkinIdList() {
+  private static _getBaiduSkinIdList(categorys?: Array<string>) {
+    const _categorys = categorys || config.categorys
     const list: Array<string> = []
     for (const category in BackgroundImage.IMG_CATEGORYS) {
-      if (config.categorys.includes(category)) {
+      if (_categorys.includes(category)) {
         list.push(...(BackgroundImage.IMG_CATEGORYS[category].map(id => id.toString())))
       }
     }
     return list
+  }
+
+  static async onOpenBackgroundImage() {
+    if (config.fixedImageId) {
+
+    }
+    const url = await BackgroundImage.currentImage.getBackgroundImageValue(false)
+    if (!url) throw new Error('Invalid Background image')
+    window.open(url)
   }
 
   /** 获取用户所选类目下的所有图片 id */

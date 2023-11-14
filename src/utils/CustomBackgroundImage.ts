@@ -262,16 +262,25 @@ export class CustomBackgroundImage {
     return CustomBackgroundImage.images
   }
 
+  /** 图片 Blob URL 缓存, 避免重复从 indexeddb 中读取并生成新的 Blob URL */
+  private static _imageBlobURLCache: Record<string, string> = {}
+
   /** 通过 ID 获取图片的 Blog URL */
   static async getImageUrlByID(id: string) {
+    // 优先从缓存中取出 URL
+    if (CustomBackgroundImage._imageBlobURLCache[id]) return CustomBackgroundImage._imageBlobURLCache[id]
     const image = await DB.get<{ id: string, file: Blob }>(DBTable.BackgroundImageFiles, id)
-    return URL.createObjectURL(image.file)
+    CustomBackgroundImage._imageBlobURLCache[id] = URL.createObjectURL(image.file)
+    return CustomBackgroundImage._imageBlobURLCache[id]
   }
 
   /** 通过 ID 获取(URL 链接形式的)图片的 Image URL */
   static async getUrlByImageID(id: string) {
+    // 优先从缓存中取出 URL
+    if (CustomBackgroundImage._imageBlobURLCache[id]) return CustomBackgroundImage._imageBlobURLCache[id]
     const image = await DB.get<CustomBackgroundImage>(DBTable.BackgroundImages, id)
-    return image.url as string
+    CustomBackgroundImage._imageBlobURLCache[id] = image.url as string
+    return CustomBackgroundImage._imageBlobURLCache[id]
   }
   /**
    * 删除以保存的图片

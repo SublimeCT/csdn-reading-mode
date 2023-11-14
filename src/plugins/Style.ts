@@ -37,9 +37,7 @@ export class Style implements AppPlugin {
   /** 更新背景图片 */
   static async updateBackgroundIamge() {
     if (config.bgColor) return
-    const image = config.fixedImageId
-      ? new BackgroundImage(config.fixedImageId)
-      : await BackgroundImage.getImage()
+    const image = await BackgroundImage.getImage()
     const backgroundImage = await image.getBackgroundImageValue()
     Style.vars['--background-image'] = backgroundImage
     Style.saveStylesAttrs()

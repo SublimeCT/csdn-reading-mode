@@ -4,6 +4,9 @@ export const NAME = 'CSDN 去广告沉浸阅读模式'
 /** 页面中的 sidebar 元素 selector */
 export const SIDEBAR_SELECTOR = '.csdn-side-toolbar'
 
+/** 默认的百度皮肤背景图片类目 */
+export const DEFAULT_CATEGORYS = ['小清新', '简约', '风景']
+
 export class ScriptConfig {
   /** 类目集合 */
   categorys: Array<string> = []
@@ -19,8 +22,6 @@ export class ScriptConfig {
    * @description 如果存在则固定使用此图片
    */
   fixedImageId: string = ''
-  /** 是否使用百度搜索皮肤的随机背景图片 */
-  enableBaiduSkin: boolean = true
   /** 纯色背景, 优先级高于图片 */
   bgColor: string = ''
   /** 默认是否隐藏设置按钮 */

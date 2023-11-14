@@ -52,10 +52,9 @@ export class Application {
     }
   }
 
+  /** 修改是否使用随机背景 */
   emitChangeDynamicIamge(dynamic: boolean) {
     this.emit('onChangeDynamicBackground', dynamic)
-    if (dynamic) {
-      this.emit('onUpdateBackgroundImage')
-    }
+    this.emit('onUpdateBackgroundImage')
   }
 }
