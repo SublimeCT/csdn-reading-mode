@@ -14,6 +14,11 @@ export interface AppPlugin {
    * @param file 图片 file
    */
   onPreviewImage?(url: SettledFileInfo): void
+  /**
+   * 用户删除已添加的自定义图片
+   * @param ids 图片 ID
+   */
+  onRemoveCustomImage?(ids: Array<string>): void
   /** 刷新背景图片 */
   onUpdateBackgroundImage?(): void
   /** 用户修改是否使用随机背景选项 */

@@ -10,7 +10,7 @@ export class Catalogue implements AppPlugin {
 
   syncShowCatalogue() {
     if (config.showCatalogue && document.getElementById('groupfile')) {
-      window.fixedSidebarInButton()
+      if (window.fixedSidebarInButton) window.fixedSidebarInButton()
       document.body.setAttribute('show-catalogue', '')
       if (window.$csdn && window.$csdn.fixedSidebar) {
         window.$csdn.fixedSidebar({

@@ -63,6 +63,7 @@ const customRequest = async (options: CustomRequestOptions) => {
 
 const onRemove = (data: { file: SettledFileInfo, fileList: SettledFileInfo[] }) => {
   CustomBackgroundImage.remove(data.file)
+  Application.application.emit('onRemoveCustomImage', [data.file.id])
 }
 
 const onPreview = async (file: SettledFileInfo) => {
@@ -111,8 +112,10 @@ const onFinished: OnFinish = ({ file, event }) => {
 }
 
 const removeAll = async () => {
+  const ids = images.value.map(image => image.id)
   await CustomBackgroundImage.clear()
   uploadRef.value?.clear()
+  Application.application.emit('onRemoveCustomImage', ids)
 }
 
 /**

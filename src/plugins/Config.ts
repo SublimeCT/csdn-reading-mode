@@ -35,4 +35,8 @@ export class Config implements AppPlugin {
     }
     this.onConfigChange('fixedImageId')
   }
+  onRemoveCustomImage(ids: string[]): void {
+    // 如果用户删除了固定显示的自定义图片, 则将固定图片 ID 置空
+    if (config.fixedImageId && ids.includes(config.fixedImageId)) config.fixedImageId = ''
+  }
 }
