@@ -54,7 +54,7 @@
                   </n-tag>
                 </n-space>
               </n-form-item>
-              <n-form-item label="自定义背景图片[待重构]" path="bgColor">
+              <n-form-item label="自定义背景图片[待修改]" path="bgColor">
                 <custom-image v-model:url="config.customUrl"></custom-image>
               </n-form-item>
             </n-form>
@@ -98,6 +98,18 @@
                   </n-switch>
                 </section>
               </n-form-item>
+              <n-form-item label="文章宽度[待修改]" path="articleWeightRate">
+                <section style="width: 100%;">
+                  <tips>
+                    <div class="tips-row">
+                      宽度基于源码中的 .container 的宽度, 详见 <a target="_blank" href="https://github.com/SublimeCT/greasy_monkey_scripts/issues/4#issuecomment-675349913">#4</a>
+                    </div>
+                  </tips>
+                  <section style="width: calc(100% - 20px); margin: 0 10px;">
+                    <n-slider v-model:value="config.articleWeightRate" :marks="{ 0: '0%', 50: '50%', 100: '100%' }" @update-value="onChange('articleWeightRate')" />
+                  </section>
+                </section>
+              </n-form-item>
             </n-form>
           </n-scrollbar>
         </n-tab-pane>
@@ -113,7 +125,7 @@
 
 <script setup lang="ts">
 import { StyleValue, ref } from 'vue';
-import { NTag, NScrollbar, NSpace, NSwitch, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider, NTabs, NTabPane } from 'naive-ui'
+import { NTag, NScrollbar, NSlider, NSpace, NSwitch, NModal, NForm, NFormItem, NColorPicker, NButton, NConfigProvider, NTabs, NTabPane } from 'naive-ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { Application } from '../Application';
 import { BackgroundImage } from '../utils/BackgroundImage';

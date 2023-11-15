@@ -35,7 +35,7 @@ export class ScriptConfig {
   /** 是否匹配原文链接 */
   showSourceLink: boolean = true
   /** 文章宽度百分比 */
-  articleWeightRate: string = ''
+  articleWeightRate: number = 100
 
   /** 文章宽度百分比值 */
   get articleWeight() {
