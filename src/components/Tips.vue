@@ -17,11 +17,13 @@
   font-size: 14px;
   color: #666;
   margin-bottom: 5px;
+  width: 100%;
 }
 .userscript-tips-component .tips-row {
   width: 100%;
   display: block;
   transition: 0.2s all ease-in-out;
+  font-size: 13px;
 }
 
 .userscript-tips-component strong {

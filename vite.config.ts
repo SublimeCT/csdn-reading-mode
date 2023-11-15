@@ -27,6 +27,7 @@ export default defineConfig({
         ],
         match: [
           '*://blog.csdn.net/*/article/details/*',
+          // example 1: https://lgdsunday.blog.csdn.net/article/details/77644618?spm=1001.2014.3001.5502
           '*://*.blog.csdn.net/article/details/*',
         ],
         // include: [

@@ -8,6 +8,7 @@ import { CSDN } from './plugins/CSDN';
 import { Intercept } from './plugins/Intercept';
 import { Catalogue } from './plugins/Catalogue';
 import { Pagination } from './plugins/Pagination';
+import { SourceLink } from './plugins/SourceLink';
 
 const main = async () => {
   // 注册 plugins
@@ -18,6 +19,7 @@ const main = async () => {
     .use(new Intercept())
     .use(new Catalogue())
     .use(new Pagination())
+    .use(new SourceLink())
 
   const application = Application.application
 
