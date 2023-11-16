@@ -25,7 +25,7 @@ export class ScriptConfig {
   /** 纯色背景, 优先级高于图片 */
   bgColor: string = ''
   /** 默认是否隐藏设置按钮 */
-  defaultHideMenu: boolean = false
+  defaultShowMenu: boolean = true
   /** 默认是否隐藏底部推荐文章 */
   hideRecommendBox: boolean = false
   /** 默认是否隐藏底部版权信息 */

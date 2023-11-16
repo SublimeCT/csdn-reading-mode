@@ -1,5 +1,5 @@
 <template>
-  <a :class="{ 'option-box': true, defaultHideMenu: config.defaultHideMenu }" data-type="$setting"
+  <a :class="{ 'option-box': true, defaultHideMenu: !config.defaultShowMenu }" data-type="$setting"
     @click="visibleSettingsDialog = !visibleSettingsDialog">
     <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2365">
       <path

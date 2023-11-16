@@ -376,11 +376,11 @@ a.go-top-hide.option-box[data-type=gotop] + a.defaultHideMenu.option-box[data-ty
   border-radius: 3px;
   border: 2px solid #DDD;
 }
-#setting-dialog section article .row#defaultHideMenu-wrap > .content > label {
+#setting-dialog section article .row#defaultShowMenu-wrap > .content > label {
   cursor: pointer;
   margin-right: 15px;
 }
-#setting-dialog section article .row#defaultHideMenu-wrap > .content > label >input {
+#setting-dialog section article .row#defaultShowMenu-wrap > .content > label >input {
   vertical-align: middle;
 }
 #setting-dialog section article .row > .content {

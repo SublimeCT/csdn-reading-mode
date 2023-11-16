@@ -81,6 +81,23 @@
                   </n-switch>
                 </section>
               </n-form-item>
+              <n-form-item label="是否显示 设置(小齿轮)按钮" path="showSourceLink">
+                <section style="width: 100%;">
+                  <tips>
+                    <div class="tips-row">
+                      隐藏之后设置(小齿轮)按钮会与回到顶部按钮同步显示和隐藏
+                    </div>
+                  </tips>
+                  <n-switch v-model:value="config.defaultShowMenu" @update-value="onChange('defaultShowMenu')">
+                    <template #checked>
+                      显示
+                    </template>
+                    <template #unchecked>
+                      隐藏
+                    </template>
+                  </n-switch>
+                </section>
+              </n-form-item>
               <n-form-item label="是否显示 原文链接" path="showSourceLink">
                 <section style="width: 100%;">
                   <tips>
